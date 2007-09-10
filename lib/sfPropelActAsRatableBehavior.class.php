@@ -1,0 +1,338 @@
+<?php
+/*
+ * This file is part of the sfPropelActAsRatableBehavior package.
+ *
+ * (c) 2007 Nicolas Perriault <nperriault@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+/**
+ * This Propel behavior aims at providing rating capabilities on any Propel
+ * object
+ *
+ * @package    plugins
+ * @subpackage rating 
+ * @author     Nicolas Perriault <nperriault@gmail.com>
+ */
+class sfPropelActAsRatableBehavior
+{
+
+  const DEFAULT_MAX_RATING = 5;
+
+  /**
+   * <p>Retrieves the object reference key. By default, we use the primary key 
+   * of the Propel object. It is possible to configure the name of the column to 
+   * use as a reference specifying the 'reference_field' parameter of the 
+   * behavior in the Propel model class it is applied to, eg:</p>
+   * <pre>
+   * sfPropelBehavior::add('sfTestObject', 
+   *                       array('sfPropelActAsRatableBehavior' => 
+   *                             array('reference_field' => sfTestObjectPeer::CUSTOM_ID)));
+   * </pre>
+   * 
+   * @param  BaseObject  $object
+   * @return int 
+   * @throws sfPropelActAsRatableException
+   */
+  protected static function getReferenceKey(BaseObject $object)
+  {
+    if ($object->isNew())
+    {
+      throw new sfPropelActAsRatableException(
+        'You cannot rate or retrieve rating for unsaved objects');
+    }
+    
+    $reference_field = sfConfig::get(
+      sprintf('propel_behavior_sfPropelActAsRatableBehavior_%s_reference_field', 
+              get_class($object)));
+    
+    if (is_null($reference_field))
+    {
+      return $object->getPrimaryKey();
+    }
+
+    $object_reference_key = null;
+    
+    try // to retrieve column value from a phpName
+    {
+      $object_reference_key = $object->getByName($reference_field, BasePeer::TYPE_PHPNAME);
+    } catch (Exception $e) {}
+    
+    try // to retrieve column value from a colName
+    {
+      $object_reference_key = $object->getByName($reference_field, BasePeer::TYPE_COLNAME);
+    } catch (Exception $e) {}
+    
+    try // to retrieve column value from a fieldName
+    {
+      $object_reference_key = $object->getByName($reference_field, BasePeer::TYPE_FIELDNAME);
+    } catch (Exception $e) {}
+    
+    if (is_null($object_reference_key))
+    {
+      throw new sfPropelActAsRatableException(
+        sprintf('Unable to retrieve a value from reference column %s::%s', 
+                get_class($object),
+                $reference_field));
+    }
+    
+    if (!is_int($object_reference_key))
+    {
+      throw new sfPropelActAsRatableException(
+        sprintf('The reference column must be an integer (%s::get%s() is a %s)', 
+                get_class($object),
+                $reference_field,
+                getType($object_reference_key)));
+    }
+    
+    return $object_reference_key;
+  }
+  
+  /**
+   * Retrieves an existing rating object, or return a new empty one
+   *
+   * @param  BaseObject  $object
+   * @param  mixed       $user_reference  Unique user reference
+   * @return sfRating
+   * @throws sfPropelActAsRatableException
+   **/
+  protected function getOrCreate(BaseObject $object, $user_reference=null)
+  {
+    if ($object->isNew())
+    {
+      throw new sfPropelActAsRatableException('Unsaved objects are not ratable');
+    }
+    $c = new Criteria();
+    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
+    if (!is_null($user_reference))
+    {
+      $c->add(sfRatingPeer::USER_REFERENCE, $user_reference);
+    }
+    $result = sfRatingPeer::doSelectOne($c);
+    return is_null($result) ? new sfRating() : $result;
+  }
+
+  /**
+   * Clear all ratings for an object
+   *
+   * @param  BaseObject  $object
+   **/
+  public function clearRatings(BaseObject $object)
+  {
+    $c = new Criteria();
+    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
+    return sfRatingPeer::doDelete($c);
+  }
+
+  /**
+   * Clear user rating for an object
+   *
+   * @param  BaseObject  $object
+   * @param  mixed       $user_reference  Unique reference to the user
+   **/
+  public function clearUserRating(BaseObject $object, $user_reference)
+  {
+    if (is_null($user_reference) or trim((string)$user_reference) === '')
+    {
+      throw new sfPropelActAsRatableException('Impossible to clear a user rating with no user reference provided');
+    }
+    $c = new Criteria();
+    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
+    $c->add(sfRatingPeer::USER_REFERENCE, $user_reference);
+    return sfRatingPeer::doDelete($c);
+  }
+
+  /**
+   * Checks if an Object has been rated
+   *
+   * @param  BaseObject  $object
+   **/
+  public function hasBeenRated(BaseObject $object)
+  {
+    $c = new Criteria();
+    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
+    return sfRatingPeer::doCount($c) > 0;
+  }
+
+  /**
+   * Checks if an Object has been rated by a user
+   *
+   * @param  BaseObject  $object
+   * @param  mixed       $user_reference  Unique reference to a user
+   **/
+  public function hasBeenRatedByUser(BaseObject $object, $user_reference)
+  {
+    if (is_null($user_reference) or trim((string)$user_reference) === '')
+    {
+      throw new sfPropelActAsRatableException('Impossible to check a user rating with no user reference provided');
+    }
+    $c = new Criteria();
+    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
+    $c->add(sfRatingPeer::USER_REFERENCE, $user_reference);
+    return (sfRatingPeer::doCount($c) > 0);
+  }
+  
+  /**
+   * Old method to set maximum rating in a class constant
+   * This stays here for compability purpose
+   * 
+   * @param  BaseObject  $object
+   * @return int
+   */
+  protected static function getDefaultMaxRating(BaseObject $object)
+  {
+    $max_rating = @constant(get_class($object).'::MAX_RATING');
+    if (!is_int($max_rating))
+    {
+      $max_rating = self::DEFAULT_MAX_RATING;
+      sfLogger::getInstance()->warning(
+        sprintf('No maximum rating has been set for "%s" ratable objects, '.
+                'default has been set to %d',
+                get_class($object),
+                self::DEFAULT_MAX_RATING));
+    }
+    return $max_rating;
+  }
+
+  /**
+   * Retrieves maximum rating for given object
+   * 
+   * @param  BaseObject  $object  Propel object instance
+   * @return int
+   * @throws sfPropelActAsRatableException
+   */
+  public function getMaxRating(BaseObject $object)
+  {
+    $max_rating = sfConfig::get(
+      sprintf('propel_behavior_sfPropelActAsRatableBehavior_%s_max_rating', 
+              get_class($object)), self::getDefaultMaxRating($object));
+    if (!is_int($max_rating))
+    {
+      throw new sfPropelActAsRatableException(
+        'The max_rating parameter must be an integer');
+    }
+    
+    if (is_float($max_rating) && floor($max_rating) != $max_rating) // yeah, php typing sucks...
+    {
+      throw new sfPropelActAsRatableException(
+        sprintf('You cannot type %s::MAX_RATING as float (you provided "%s")', 
+                get_class($object),
+                $max_rating));
+    }
+    
+    if ($max_rating < 2)
+    {
+      throw new sfPropelActAsRatableException(
+        'The max_rating parameter must be an integer greater than 1');
+    }
+    
+    return $max_rating;
+  }
+
+  /**
+   * Gets the object rating
+   *
+   * @param  BaseObject  $object
+   * @param  int         $floating_point
+   * @return float
+   **/
+  public function getRating(BaseObject $object, $floating_point=2)
+  {
+    $c = new Criteria();
+    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
+    $c->clearSelectColumns();
+    $c->addAsColumn('nb_ratings', 'COUNT('.sfRatingPeer::ID.')');
+    $c->addAsColumn('total', 'SUM('.sfRatingPeer::RATING.')');
+    $p = array();
+    $sql = BasePeer::createSelectSql($c, $p);
+    $con = Propel::getConnection();
+    $stmt = $con->prepareStatement($sql);
+    $stmt->setString(1, self::getReferenceKey($object));
+    $stmt->setString(2, get_class($object));
+    $rs = $stmt->executeQuery(ResultSet::FETCHMODE_ASSOC);
+    $rs->next();
+    $nb_ratings = $rs->getString('nb_ratings');
+    $total      = $rs->getString('total');
+    if (!$nb_ratings or $nb_ratings === 0)
+    {
+      return NULL; // Object has not been rated yet
+    }
+    return round($total / $nb_ratings,
+                 sfConfig::get('app_rating_floatingpoint', $floating_point));
+  }
+  
+  /**
+   * Gets the object rating for given user pk
+   *
+   * @param  BaseObject  $object
+   * @param  mixed       $user_reference  Unique reference to the user
+   **/
+  public function getUserRating(BaseObject $object, $user_reference)
+  {
+    if (is_null($user_reference) or trim((string)$user_reference) === '')
+    {
+      throw new sfPropelActAsRatableException(
+        'Impossible to get a user rating with no user reference provided');
+    }
+    $c = new Criteria();
+    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
+    $c->add(sfRatingPeer::USER_REFERENCE, $user_reference);
+    $rating_object = sfRatingPeer::doSelectOne($c);
+    if (!is_null($rating_object))
+    {
+      return $rating_object->getRating();
+    }
+  }
+  
+  /**
+   * Rates the Object
+   *
+   * @param  BaseObject  $object
+   * @param  int         $rating
+   * @param  mixed       $user_reference  Optionnal unique reference to user
+   * @throws sfPropelActAsRatableException
+   **/
+  public function setRating(BaseObject $object, $rating, $user_reference=null)
+  {
+    if (is_float($rating) && floor($rating) != $rating)
+    {
+      throw new sfPropelActAsRatableException(
+        sprintf('You cannot rate an object with a float (you provided "%s")', 
+                $rating));
+    }
+    
+    $rating = (int)$rating;
+    
+    if ($rating > $object->getMaxRating())
+    {
+      throw new sfPropelActAsRatableException(
+        sprintf('Maximum rating is %d', $object->getMaxRating()));
+    }
+    
+    if ($rating < 1)
+    {
+      throw new sfPropelActAsRatableException('Minimum rating is 1');
+    }
+    
+    $rating_object = $this->getOrCreate($object, $user_reference);
+    $rating_object->setRatableModel(get_class($object));
+    $rating_object->setRatableId(self::getReferenceKey($object));
+    if (!is_null($user_reference))
+    {
+      $rating_object->setUserReference($user_reference);
+    }
+    $rating_object->setRating($rating);
+    
+    return $rating_object->save();
+  }
+
+}

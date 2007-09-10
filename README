@@ -1,0 +1,228 @@
+[[PageOutline]]
+
+= sfPropelActAsRatableBehaviorPlugin =
+
+This plugin aims at providing rating capabilities to any Propel object with the 
+help of a dedicated Propel behavior.   
+
+[[Image(rating_capture.png, right)]]
+
+== Installation ==
+
+To install the plugin, run this command within your symfony project :
+
+{{{
+symfony plugin-install http://plugins.symfony-project.com/sfPropelActAsRatableBehaviorPlugin
+}}}
+
+To activate this Propel behavior in Symfony, you must first activate behaviors 
+in your propel.ini file :
+
+{{{
+propel.builder.addBehaviors = true
+}}}
+
+In one (or more) of your existing model object classes, apply the behavior. Eg. 
+for an {{{Article}}} Propel model class:
+
+{{{
+<?php
+class Article extends BaseArticle
+{
+}
+sfPropelBehavior::add('Article', array('sfPropelActAsRatableBehavior'));
+}}}
+
+=== Behavior optional parameters ===
+
+You can add this optionals parameters when applying the bahavior:
+
+ * {{{max_rating}}}: sets the maximum rating available for an object (this must 
+   be an integer - default is 5)
+ * {{{reference_field}}}: sets the name of the field which will reference the 
+   object (by default it is automatically set to its primary key field, so 
+   leave this if you're unsure). A reference field can be a column name, a field
+   name or a Propel phpName.
+
+Example of use of these parameters:
+
+{{{
+<?php
+class Article extends BaseArticle
+{
+}
+sfPropelBehavior::add('Article', 
+                      array('sfPropelActAsRatableBehavior',
+                            array('max_rating'      => 10,
+                                  'reference_field' => 'StrippedTitle')));
+}}}
+
+Then, rebuild your model :
+
+{{{
+symfony propel-build-all
+}}}
+
+And clear the cache :
+
+{{{
+symfony cc
+}}}
+
+== Using the Ajax rating system ==
+
+This plugin provides an Ajax-based rating system, with pretty stars to click on.
+
+[[Image(rating_capture.png)]]
+
+To activate this feature, you must enable the {{{sfRating}}} module in the 
+{{{config/settings.yml}}} file of the app you want to use the helper in :
+
+{{{
+all:
+  .settings:
+    enabled_modules:        [default, sfRating]
+}}}
+
+If you are under Microsoft Windows, you also have to manually copy the {{{./web}}} 
+directory of the plugin in the {{{%SF_ROOT_DIR%/web}}} directory of your project
+and rename it to {{{sfPropelActAsRatableBehaviorPlugin}}}. Then you will have 
+this on the filesytem :
+
+{{{
+project_root
+  [...]
+  web
+    sfPropelActAsRatableBehaviorPlugin
+      css
+        sf_rating.css
+      images
+        alt_star.gif
+}}}
+
+Then, you can use the {{{sf_rater}}} helper in any of your template:
+
+{{{
+<?php use_helper('sfRating') ?>
+<?php echo sf_rater($article, md5($user->getId()) ?>
+}}}
+
+... where {{{$article}}} is of course an instance of your {{{Article}}} propel 
+class and {{{$user->getId()}}} is an optional unique reference to the user 
+currently rating your object.
+
+The unique user reference can be an IP address:
+
+{{{
+<?php use_helper('sfRating') ?>
+<?php echo sf_rater($article, md5($_SERVER['REMOTE_ADDR']) ?>
+}}}
+
+== API Usage ==
+
+You can rate your previously configured {{{Article}}} objects through the 
+new API which as been dynamically added to your object by the behavior.
+
+Note that you can provide a user PK to determine if one of your user has already 
+rated the object. Here we imagine a {{{User}}} object instance {{{$user}}} which represent a 
+member, an author, a person or anything like this.
+
+To set a rating for a given user ({{{$unique_user_reference}}} is a string representing a 
+unique reference to a user - eg. {{{md5($_SERVER['REMOTE_ADDR'])}}}) :
+
+{{{
+$article->setRating(10, $unique_user_reference);
+}}}
+
+To retrieve user rating for this object :
+
+{{{
+$article->getUserRating($unique_user_reference);
+}}}
+
+To get the average rating of the object :
+
+{{{
+$article->getRating();
+}}}
+
+To retrieve the maximum possible rating for an object (which you have defined in
+the {{{max_rating}}} behavior optional parameter - default is 5) :
+
+{{{
+$article->getMaxRating();
+}}}
+
+To clear user rating :
+
+{{{
+$article->clearRating($unique_user_reference);
+}}}
+
+To clear all ratings for the object :
+
+{{{
+$article->clearRatings();
+}}}
+
+You can test if the object has already been rated :
+
+{{{
+$article->hasBeenRated();
+}}}
+
+You can also test if the object has already been rated by a particular user:
+
+{{{
+$article->hasBeenRatedByUser($unique_user_reference);
+}}}
+
+== Unit testing ==
+
+The plugin is provided with a test suite located in the {{{./test}}} directory. 
+To run the tests, type this line from the root of your project :
+
+{{{
+$ php plugins/sfPropelActAsRatableBehaviorPlugin/test/sfPropelActAsRatableBehaviorTest.php
+}}}
+
+Note that you have to provide a Propel test object class name to run the test in the test file:
+
+{{{
+define('TEST_CLASS', 'Article');
+}}}
+
+== TODO ==
+
+ * Manage messages i18n
+ * Add functional tests
+ * ~~Add a component to provide a rating interface, AJAX based~~ added in v0.6.0
+ 
+== Changelog ==
+
+ * '''v0.6.1'''
+   * Added a way to specify a custom reference field to identify a ratable 
+     Propel object
+   * Added ability to set the maximum rating for an object when the behavior is
+     added
+   * Key length as also been decreased to avoid a strange MySQL bug on KEY length
+   * Added unit tests
+ * '''v0.6.0'''
+   * Added an AJAX rating system as a helper
+   * Added constant MAX_RATING management for consistency control 
+     in ratable model class
+   * Moved int fields to varchar for storing unique user reference descriptor
+     (eg. storing the IP address, an email, a md5 hash, etc.)
+   * {{{sfRatings}}} table has been renamed to {{{sf_ratings}}}: you have to 
+     rebuild your SQL files and insert them in your DB if you upgrade from 
+     0.5.0. Hopefully, one day we'll have a migration system in Symfony core...
+   * Removed configuration file to set up Propel object to unit test in the test
+     suite
+ * '''vO.5.0'''
+   * Initial release
+   
+== Credits ==
+
+ * The eye-candy star-based Ajax system is based on the great work of 
+ Komodomedia:
+ http://komodomedia.com/blog/samples/star_rating/example2.htm
