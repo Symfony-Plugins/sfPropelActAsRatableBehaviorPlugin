@@ -21,13 +21,9 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
     sfLogger::getInstance()->debug('You cannot rate a NULL object');
   }
   
-  // Add css and js resources to the response
-  sfContext::getInstance()
-             ->getResponse()
-             ->addJavascript('/sfPropelActAsRatableBehaviorPlugin/js/sf_rating');
-  sfContext::getInstance()
-             ->getResponse()
-             ->addStylesheet('/sfPropelActAsRatableBehaviorPlugin/css/sf_rating');
+  // Add css resources to the response
+  $css = '/sfPropelActAsRatableBehaviorPlugin/css/sf_rating';
+  sfContext::getInstance()->getResponse()->addStylesheet($css);
   
   $star_width = sfConfig::get('app_rating_starwidth', 25);
   try
