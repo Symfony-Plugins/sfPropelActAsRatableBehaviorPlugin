@@ -100,8 +100,8 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 	public function setRatableId($v)
 	{
 
-						if ($v !== null && !is_int($v) && is_numeric($v)) {
-			$v = (int) $v;
+						if ($v !== null && !is_string($v)) {
+			$v = (string) $v; 
 		}
 
 		if ($this->ratable_id !== $v) {
@@ -147,7 +147,7 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 
 			$this->ratable_model = $rs->getString($startcol + 1);
 
-			$this->ratable_id = $rs->getInt($startcol + 2);
+			$this->ratable_id = $rs->getString($startcol + 2);
 
 			$this->user_reference = $rs->getString($startcol + 3);
 

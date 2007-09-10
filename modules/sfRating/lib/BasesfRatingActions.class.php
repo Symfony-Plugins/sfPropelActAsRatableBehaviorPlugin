@@ -39,30 +39,37 @@ class BasesfRatingActions extends sfActions
       
       // Retrieve parameters from request
       $propel_object_name = $this->getRequestParameter('o');
-      $propel_object_id = $this->getRequestParameter('id');
+      $propel_object_ref = $this->getRequestParameter('id');
       $rating = $this->getRequestParameter('rating');
       $user_ref = trim((string)$this->getRequestParameter('uref'));
       if ($user_ref === '')
       {
         $user_ref = NULL;
       }
-      if (!($propel_object_name && $propel_object_id && !is_null($rating)))
+      if (!($propel_object_name && $propel_object_ref && !is_null($rating)))
       {
-        return $this->renderText('Parameters are missing');
+        return $this->renderFatalError('Parameters are missing');
       }
       if (!class_exists($propel_object_name))
       {
-        return $this->renderText(sprintf('Unknown class "%s"', $propel_object_name));      
+        return $this->renderFatalError(sprintf('Unknown class "%s"', $propel_object_name));      
       }
       
       // Retrieve Propel object instance
       $propel_object = new $propel_object_name;
       $propel_object_peer = $propel_object->getPeer();
-      $propel_object = call_user_func(array($propel_object_peer, 'retrieveByPK'), 
-                                      $propel_object_id);
+      $criteria = new Criteria();
+      $ref_field_type = $propel_object->getReferenceFieldType();
+      $column = call_user_func(array($propel_object_peer, 'translateFieldName'),
+                               $propel_object->getReferenceField(), 
+                               $ref_field_type, 
+                               BasePeer::TYPE_COLNAME);
+      $criteria->add($column, sprintf('MD5(title) = "%s"', $propel_object_ref), Criteria::CUSTOM);
+      $propel_object = call_user_func(array(get_class($propel_object_peer), 'doSelectOne'), 
+                                      $criteria);
       if (is_null($propel_object))
       {
-        return $this->renderText('Impossible to get object instance');
+        return $this->renderFatalError('Unable to retrieve ratable object from passed reference => '.$propel_object_ref);
       }
       
       // Retrieve Rating parameters from request and update object
@@ -72,7 +79,17 @@ class BasesfRatingActions extends sfActions
     }
     catch (Exception $e)
     {
-      return $this->renderText('Error: '.$e->getMessage());
+      return $this->renderFatalError($e->getMessage());
     }
-  }  
+  }
+  
+  protected function renderFatalError($log_info = null)
+  {
+    if (!is_null($log_info))
+    {
+      sfLogger::getInstance()->warning('Rating error: '.$log_info);
+    }
+    return $this->renderText('A problem has occured, sorry for the inconvenience');
+  }
+  
 }

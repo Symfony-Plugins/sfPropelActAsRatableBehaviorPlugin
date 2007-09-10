@@ -18,8 +18,61 @@
  */
 class sfPropelActAsRatableBehavior
 {
-
+  
+  /**
+   * Default default max rating
+   */
   const DEFAULT_MAX_RATING = 5;
+
+  /**
+   * Returns configured reference field name or NULL if none has been provided
+   * 
+   * @return string
+   */
+  public function getReferenceField(BaseObject $object)
+  {
+    return sfConfig::get(
+      sprintf('propel_behavior_sfPropelActAsRatableBehavior_%s_reference_field', 
+              get_class($object)));
+  }
+
+  /**
+   * Retrieves reference field Propel type
+   * 
+   * @return BaseObject  $object
+   * @return string
+   */
+  public function getReferenceFieldType(BaseObject $object)
+  {
+    $propel_type = sfConfig::get(
+      sprintf('propel_behavior_sfPropelActAsRatableBehavior_%s_reference_field_type', 
+              get_class($object)));
+    if (!is_null($propel_type))
+    {
+      return $propel_type;
+    }
+    
+    $reference_field = $object->getReferenceField();
+    try // to retrieve column value from a phpName
+    {
+      $object_reference_key = $object->getByName($reference_field, BasePeer::TYPE_PHPNAME);
+      self::setReferenceFieldType($object, BasePeer::TYPE_PHPNAME);
+    } catch (Exception $e) {}
+    
+    try // to retrieve column value from a colName
+    {
+      $object_reference_key = $object->getByName($reference_field, BasePeer::TYPE_COLNAME);
+      self::setReferenceFieldType($object, BasePeer::TYPE_COLNAME);
+    } catch (Exception $e) {}
+    
+    try // to retrieve column value from a fieldName
+    {
+      $object_reference_key = $object->getByName($reference_field, BasePeer::TYPE_FIELDNAME);
+      self::setReferenceFieldType($object, BasePeer::TYPE_FIELDNAME);
+    } catch (Exception $e) {}
+    
+    return $this->getReferenceFieldType($object);
+  }
 
   /**
    * <p>Retrieves the object reference key. By default, we use the primary key 
@@ -36,7 +89,7 @@ class sfPropelActAsRatableBehavior
    * @return int 
    * @throws sfPropelActAsRatableException
    */
-  protected static function getReferenceKey(BaseObject $object)
+  public function getReferenceKey(BaseObject $object)
   {
     if ($object->isNew())
     {
@@ -53,41 +106,17 @@ class sfPropelActAsRatableBehavior
       return $object->getPrimaryKey();
     }
 
-    $object_reference_key = null;
-    
-    try // to retrieve column value from a phpName
-    {
-      $object_reference_key = $object->getByName($reference_field, BasePeer::TYPE_PHPNAME);
-    } catch (Exception $e) {}
-    
-    try // to retrieve column value from a colName
-    {
-      $object_reference_key = $object->getByName($reference_field, BasePeer::TYPE_COLNAME);
-    } catch (Exception $e) {}
-    
-    try // to retrieve column value from a fieldName
-    {
-      $object_reference_key = $object->getByName($reference_field, BasePeer::TYPE_FIELDNAME);
-    } catch (Exception $e) {}
-    
+    $object_reference_key = $object->getByName($reference_field, 
+                                               $object->getReferenceFieldType());
     if (is_null($object_reference_key))
     {
       throw new sfPropelActAsRatableException(
-        sprintf('Unable to retrieve a value from reference column %s::%s', 
-                get_class($object),
-                $reference_field));
-    }
-    
-    if (!is_int($object_reference_key))
-    {
-      throw new sfPropelActAsRatableException(
-        sprintf('The reference column must be an integer (%s::get%s() is a %s)', 
-                get_class($object),
+        sprintf('Reference field %s cannot be retrieved for %s class objects', 
                 $reference_field,
-                getType($object_reference_key)));
+                get_class($object)));
     }
     
-    return $object_reference_key;
+    return md5($object_reference_key);
   }
   
   /**
@@ -105,7 +134,7 @@ class sfPropelActAsRatableBehavior
       throw new sfPropelActAsRatableException('Unsaved objects are not ratable');
     }
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_ID, $object->getReferenceKey());
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     if (!is_null($user_reference))
     {
@@ -123,7 +152,7 @@ class sfPropelActAsRatableBehavior
   public function clearRatings(BaseObject $object)
   {
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_ID, $object->getReferenceKey());
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     return sfRatingPeer::doDelete($c);
   }
@@ -141,7 +170,7 @@ class sfPropelActAsRatableBehavior
       throw new sfPropelActAsRatableException('Impossible to clear a user rating with no user reference provided');
     }
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_ID, $object->getReferenceKey());
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->add(sfRatingPeer::USER_REFERENCE, $user_reference);
     return sfRatingPeer::doDelete($c);
@@ -155,7 +184,7 @@ class sfPropelActAsRatableBehavior
   public function hasBeenRated(BaseObject $object)
   {
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_ID, $object->getReferenceKey());
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     return sfRatingPeer::doCount($c) > 0;
   }
@@ -170,10 +199,11 @@ class sfPropelActAsRatableBehavior
   {
     if (is_null($user_reference) or trim((string)$user_reference) === '')
     {
-      throw new sfPropelActAsRatableException('Impossible to check a user rating with no user reference provided');
+      throw new sfPropelActAsRatableException(
+        'Impossible to check a user rating with no user reference provided');
     }
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_ID, $object->getReferenceKey());
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->add(sfRatingPeer::USER_REFERENCE, $user_reference);
     return (sfRatingPeer::doCount($c) > 0);
@@ -212,7 +242,13 @@ class sfPropelActAsRatableBehavior
   {
     $max_rating = sfConfig::get(
       sprintf('propel_behavior_sfPropelActAsRatableBehavior_%s_max_rating', 
-              get_class($object)), self::getDefaultMaxRating($object));
+              get_class($object)));
+    
+    if (is_null($max_rating))
+    {
+      $max_rating = self::getDefaultMaxRating($object);
+    }
+    
     if (!is_int($max_rating))
     {
       throw new sfPropelActAsRatableException(
@@ -246,7 +282,7 @@ class sfPropelActAsRatableBehavior
   public function getRating(BaseObject $object, $floating_point=2)
   {
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_ID, $object->getReferenceKey());
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->clearSelectColumns();
     $c->addAsColumn('nb_ratings', 'COUNT('.sfRatingPeer::ID.')');
@@ -255,7 +291,7 @@ class sfPropelActAsRatableBehavior
     $sql = BasePeer::createSelectSql($c, $p);
     $con = Propel::getConnection();
     $stmt = $con->prepareStatement($sql);
-    $stmt->setString(1, self::getReferenceKey($object));
+    $stmt->setString(1, $object->getReferenceKey());
     $stmt->setString(2, get_class($object));
     $rs = $stmt->executeQuery(ResultSet::FETCHMODE_ASSOC);
     $rs->next();
@@ -283,7 +319,7 @@ class sfPropelActAsRatableBehavior
         'Impossible to get a user rating with no user reference provided');
     }
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, self::getReferenceKey($object));
+    $c->add(sfRatingPeer::RATABLE_ID, $object->getReferenceKey());
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->add(sfRatingPeer::USER_REFERENCE, $user_reference);
     $rating_object = sfRatingPeer::doSelectOne($c);
@@ -323,9 +359,18 @@ class sfPropelActAsRatableBehavior
       throw new sfPropelActAsRatableException('Minimum rating is 1');
     }
     
+    $key = $object->getReferenceKey();
+    if (is_null($key))
+    {
+      throw new sfPropelActAsRatableException(
+        sprintf('No reference key available for field %s in class %s',
+                $object->getReferenceField(),
+                get_class($object)));
+    }
+    
     $rating_object = $this->getOrCreate($object, $user_reference);
     $rating_object->setRatableModel(get_class($object));
-    $rating_object->setRatableId(self::getReferenceKey($object));
+    $rating_object->setRatableId($key);
     if (!is_null($user_reference))
     {
       $rating_object->setUserReference($user_reference);
@@ -333,6 +378,20 @@ class sfPropelActAsRatableBehavior
     $rating_object->setRating($rating);
     
     return $rating_object->save();
+  }
+  
+  /**
+   * Sets current object reference field propel type
+   * 
+   * @param  BaseObject  $object
+   * @param  string      $propel_type
+   */
+  public static function setReferenceFieldType(BaseObject $object, $propel_type)
+  {
+    sfConfig::set(
+        sprintf('propel_behavior_sfPropelActAsRatableBehavior_%s_reference_field_type',
+                get_class($object)), 
+                $propel_type);
   }
 
 }

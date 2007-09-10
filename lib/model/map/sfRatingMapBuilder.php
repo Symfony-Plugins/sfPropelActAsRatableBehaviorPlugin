@@ -34,11 +34,11 @@ class sfRatingMapBuilder {
 
 		$tMap->addPrimaryKey('ID', 'Id', 'int', CreoleTypes::INTEGER, true, null);
 
-		$tMap->addColumn('RATABLE_MODEL', 'RatableModel', 'string', CreoleTypes::VARCHAR, true, 255);
+		$tMap->addColumn('RATABLE_MODEL', 'RatableModel', 'string', CreoleTypes::VARCHAR, true, 50);
 
-		$tMap->addColumn('RATABLE_ID', 'RatableId', 'int', CreoleTypes::INTEGER, true, null);
+		$tMap->addColumn('RATABLE_ID', 'RatableId', 'string', CreoleTypes::VARCHAR, true, 32);
 
-		$tMap->addColumn('USER_REFERENCE', 'UserReference', 'string', CreoleTypes::VARCHAR, false, 255);
+		$tMap->addColumn('USER_REFERENCE', 'UserReference', 'string', CreoleTypes::VARCHAR, false, 32);
 
 		$tMap->addColumn('RATING', 'Rating', 'int', CreoleTypes::INTEGER, false, null);
 

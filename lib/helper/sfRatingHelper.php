@@ -31,7 +31,7 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
     $max_rating = $propel_object->getMaxRating();
     $actual_rating = $propel_object->getRating();
     $bar_width = $actual_rating * $star_width;
-  
+    
     $options = _parse_attributes($options);
     if (!isset($options['class']))
     {
@@ -44,8 +44,9 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
                              array('style' => 'width:'.$full_bar_width.'px'));
     }
     
-    $msg_domid = 'rating_message_'.get_class($propel_object).$propel_object->getId();
-    $bar_domid = 'current_rating_'.get_class($propel_object).$propel_object->getId();
+    $stripped_key = sf_rater_strip_key($propel_object->getReferenceKey());
+    $msg_domid = sprintf('rating_message_%s_%s', get_class($propel_object), $stripped_key) ;
+    $bar_domid = sprintf('current_rating_%s_%s', get_class($propel_object), $stripped_key) ;
     
     $list_content  = '  <li class="current-rating" id="'.$bar_domid.'" style="width:'.$bar_width.'px;">';
     $list_content .= sprintf('Currently rated %s star(s) on %d', 
@@ -56,9 +57,9 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
     for ($i=1; $i <= $max_rating; $i++)
     {
       $list_content .= '  <li>'.link_to_remote(sprintf('Rate it %d stars', $i), 
-                    array('url'      => sprintf('sfRating/rate?o=%s&id=%d&rating=%d&uref=%s', 
+                    array('url'      => sprintf('sfRating/rate?o=%s&id=%s&rating=%d&uref=%s', 
                                                 get_class($propel_object), 
-                                                $propel_object->getId(), 
+                                                $propel_object->getReferenceKey(), 
                                                 $i,
                                                 $user_ref),
                           'update'   => $msg_domid,
@@ -76,4 +77,15 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
   {
     sfLogger::getInstance()->debug('Exception catched from sf_rater helper: '.$e->getMessage());
   }
+}
+
+/**
+ * Strips a text based key
+ * 
+ * @param  styring  $key
+ * @return string
+ */
+function sf_rater_strip_key($key)
+{
+  return md5($key);
 }
