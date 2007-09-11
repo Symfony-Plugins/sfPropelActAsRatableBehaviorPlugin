@@ -335,6 +335,25 @@ class sfPropelActAsRatableBehavior
   }
   
   /**
+   * Returns true if the passed model name is ratable
+   * 
+   * @author     Xavier Lacot
+   * @author     Nicolas Perriault
+   * @param      string  $object_name
+   * @return     boolean
+   */
+  public static function isRatable($object_name)
+  {
+    if (!class_exists($object_name))
+    {
+      throw new sfPropelActAsRatableException(
+                  sprintf('Unknown class %', $object_name));
+    }
+    $base_class = sprintf('Base%s', ucfirst($object_name));
+    return !is_null(sfMixer::getCallable($base_class.':getReferenceKey'));
+  }
+  
+  /**
    * Retrieves an object instance from a given reference key
    * 
    * @param  string  $object_name

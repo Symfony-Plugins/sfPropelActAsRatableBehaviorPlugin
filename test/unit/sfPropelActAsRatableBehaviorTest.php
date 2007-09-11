@@ -1,6 +1,6 @@
 <?php
 // Define your test Propel class with behavior applied here
-define('TEST_CLASS', 'sfTestObject');
+define('TEST_CLASS', 'Article');
 
 // Autofind the first available app environment
 $sf_root_dir = realpath(dirname(__FILE__).'/../../../../');
@@ -17,7 +17,7 @@ if (!$app)
 require_once($sf_root_dir.'/test/bootstrap/functional.php');
 require_once($sf_symfony_lib_dir.'/vendor/lime/lime.php');
 
-if (!TEST_CLASS)
+if (!defined('TEST_CLASS') or !class_exists(TEST_CLASS))
 {
   // Don't run tests
   return;
@@ -31,14 +31,25 @@ $databaseManager->initialize();
 $con = Propel::getConnection();
 
 // start tests
-$t = new lime_test(41, new lime_output_color());
+$t = new lime_test(42, new lime_output_color());
 
-$obj = _create_object();
-$obj->setTitle('A test object');
-$obj->save();
-$obj2 = _create_object();
-$obj2->setTitle('Another test object');
-$obj2->save();
+$t->ok(sfPropelActAsRatableBehavior::isRatable(TEST_CLASS), 
+       sprintf('isRatable() class %s is ratable', TEST_CLASS));
+
+try
+{
+  $obj = _create_object();
+  $obj->setTitle('A test object');
+  $obj->save();
+  $obj2 = _create_object();
+  $obj2->setTitle('Another test object');
+  $obj2->save();
+}
+catch (Exception $e)
+{
+  $t->fail($e->getMessage());
+}
+
 $obj_pk = $obj->getPrimaryKey();
 $t->ok(!is_null($obj_pk), 'getPrimaryKey() Test Object saved');
 $obj2_pk = $obj2->getPrimaryKey();
