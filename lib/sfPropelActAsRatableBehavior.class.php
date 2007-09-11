@@ -40,10 +40,15 @@ class sfPropelActAsRatableBehavior
    * Retrieves reference field Propel type
    * 
    * @return BaseObject  $object
-   * @return string
+   * @return string or null if no reference field has been provided
    */
   public function getReferenceFieldType(BaseObject $object)
   {
+    if (is_null($object->getReferenceField()))
+    {
+      return null;
+    }
+    
     $propel_type = sfConfig::get(
       sprintf('propel_behavior_sfPropelActAsRatableBehavior_%s_reference_field_type', 
               get_class($object)));
@@ -86,7 +91,7 @@ class sfPropelActAsRatableBehavior
    * </pre>
    * 
    * @param  BaseObject  $object
-   * @return int 
+   * @return string as a md5 hash of the reference field 
    * @throws sfPropelActAsRatableException
    */
   public function getReferenceKey(BaseObject $object)
@@ -103,7 +108,7 @@ class sfPropelActAsRatableBehavior
     
     if (is_null($reference_field))
     {
-      return $object->getPrimaryKey();
+      return md5($object->getPrimaryKey());
     }
 
     $object_reference_key = $object->getByName($reference_field, 
@@ -327,6 +332,57 @@ class sfPropelActAsRatableBehavior
     {
       return $rating_object->getRating();
     }
+  }
+  
+  /**
+   * Retrieves an object instance from a given reference key
+   * 
+   * @param  string  $object_name
+   * @param  string  $reference_key
+   * @return BaseObject
+   * @throws sfPropelActAsRatableException
+   */
+  public static function retrieveFromReferenceKey($object_name, $reference_key)
+  {
+    if (!class_exists($object_name))
+    {
+      throw new sfPropelActAsRatableException('Unknown class '.$object_name);
+    }
+    
+    $object = new $object_name;
+    $peer = $object->getPeer();
+    $criteria = new Criteria();
+    $ref_field_type = $object->getReferenceFieldType();
+    if (is_null($ref_field_type))
+    {
+      // retrieve PK column name
+      $table_map = call_user_func(array(get_class($peer), 'getTableMap'));
+      $columns = $table_map->getColumns();
+      foreach(array_keys($columns) as $key) 
+      {
+        if ($columns[$key]->isPrimaryKey()) 
+        {
+          $column_map = $columns[$key];
+          $column = constant(get_class($peer).'::'.$column_map->getColumnName());
+        }
+      }
+    }
+    else
+    {
+      $column = call_user_func(array($peer, 'translateFieldName'),
+                               $object->getReferenceField(), 
+                               $ref_field_type, 
+                               BasePeer::TYPE_COLNAME);
+    }
+    if (is_null($column))
+    {
+      throw new sfPropelActAsRatableException(
+        'Unable to retrieve reference key column name');
+    }
+    $criteria->add($column,  
+                   sprintf('MD5(%s) = "%s"', $column, $reference_key), 
+                   Criteria::CUSTOM);
+    return call_user_func(array(get_class($peer), 'doSelectOne'), $criteria);
   }
   
   /**

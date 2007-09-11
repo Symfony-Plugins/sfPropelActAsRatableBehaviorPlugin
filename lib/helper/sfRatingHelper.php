@@ -44,9 +44,10 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
                              array('style' => 'width:'.$full_bar_width.'px'));
     }
     
-    $stripped_key = sf_rater_strip_key($propel_object->getReferenceKey());
-    $msg_domid = sprintf('rating_message_%s_%s', get_class($propel_object), $stripped_key) ;
-    $bar_domid = sprintf('current_rating_%s_%s', get_class($propel_object), $stripped_key) ;
+    $propel_object_class = get_class($propel_object);
+    $reference_key = $propel_object->getReferenceKey();
+    $msg_domid = sprintf('rating_message_%s_%s', $propel_object_class, $reference_key) ;
+    $bar_domid = sprintf('current_rating_%s_%s', $propel_object_class, $reference_key) ;
     
     $list_content  = '  <li class="current-rating" id="'.$bar_domid.'" style="width:'.$bar_width.'px;">';
     $list_content .= sprintf('Currently rated %s star(s) on %d', 
@@ -58,8 +59,8 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
     {
       $list_content .= '  <li>'.link_to_remote(sprintf('Rate it %d stars', $i), 
                     array('url'      => sprintf('sfRating/rate?o=%s&id=%s&rating=%d&uref=%s', 
-                                                get_class($propel_object), 
-                                                $propel_object->getReferenceKey(), 
+                                                $propel_object_class, 
+                                                $reference_key, 
                                                 $i,
                                                 $user_ref),
                           'update'   => $msg_domid,
@@ -77,15 +78,4 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
   {
     sfLogger::getInstance()->debug('Exception catched from sf_rater helper: '.$e->getMessage());
   }
-}
-
-/**
- * Strips a text based key
- * 
- * @param  styring  $key
- * @return string
- */
-function sf_rater_strip_key($key)
-{
-  return md5($key);
 }

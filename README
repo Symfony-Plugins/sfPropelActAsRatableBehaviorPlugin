@@ -1,5 +1,3 @@
-[[PageOutline]]
-
 = sfPropelActAsRatableBehaviorPlugin =
 
 This plugin aims at providing rating capabilities to any Propel object with the 
@@ -14,6 +12,12 @@ To install the plugin, run this command within your symfony project :
 {{{
 symfony plugin-install http://plugins.symfony-project.com/sfPropelActAsRatableBehaviorPlugin
 }}}
+
+The source code is also available:
+ * [source:plugins/sfPropelActAsRatableBehaviorPlugin from the code browser]
+ * [http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/ from the SVN repository]
+
+
 
 To activate this Propel behavior in Symfony, you must first activate behaviors 
 in your propel.ini file :
@@ -42,7 +46,8 @@ You can add this optionals parameters when applying the bahavior:
  * {{{reference_field}}}: sets the name of the field which will reference the 
    object (by default it is automatically set to its primary key field, so 
    leave this if you're unsure). A reference field can be a column name, a field
-   name or a Propel phpName.
+   name or a Propel phpName, eg. {{{'StrippedTitle'}}}, {{{'stripped_title'}}} 
+   or {{{ArticlePeer::STRIPPED_TITLE}}}.
 
 Example of use of these parameters:
 
@@ -54,7 +59,7 @@ class Article extends BaseArticle
 sfPropelBehavior::add('Article', 
                       array('sfPropelActAsRatableBehavior',
                             array('max_rating'      => 10,
-                                  'reference_field' => 'StrippedTitle')));
+                                  'reference_field' => ArticlePeer::STRIPPED_TITLE)));
 }}}
 
 Then, rebuild your model :
@@ -200,6 +205,9 @@ define('TEST_CLASS', 'Article');
  
 == Changelog ==
 
+ * '''v0.6.2'''
+   * Reference keys are now stored as a md5 hash
+   * Corrected custom refrence keys handling bug in Ajax rater widget
  * '''v0.6.1'''
    * Added a way to specify a custom reference field to identify a ratable 
      Propel object
@@ -218,7 +226,7 @@ define('TEST_CLASS', 'Article');
      0.5.0. Hopefully, one day we'll have a migration system in Symfony core...
    * Removed configuration file to set up Propel object to unit test in the test
      suite
- * '''vO.5.0'''
+ * '''v0.5.0'''
    * Initial release
    
 == Credits ==

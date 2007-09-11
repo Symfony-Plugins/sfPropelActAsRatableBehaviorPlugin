@@ -50,31 +50,34 @@ class BasesfRatingActions extends sfActions
       {
         return $this->renderFatalError('Parameters are missing');
       }
-      if (!class_exists($propel_object_name))
-      {
-        return $this->renderFatalError(sprintf('Unknown class "%s"', $propel_object_name));      
-      }
       
       // Retrieve Propel object instance
-      $propel_object = new $propel_object_name;
-      $propel_object_peer = $propel_object->getPeer();
-      $criteria = new Criteria();
-      $ref_field_type = $propel_object->getReferenceFieldType();
-      $column = call_user_func(array($propel_object_peer, 'translateFieldName'),
-                               $propel_object->getReferenceField(), 
-                               $ref_field_type, 
-                               BasePeer::TYPE_COLNAME);
-      $criteria->add($column, sprintf('MD5(title) = "%s"', $propel_object_ref), Criteria::CUSTOM);
-      $propel_object = call_user_func(array(get_class($propel_object_peer), 'doSelectOne'), 
-                                      $criteria);
+      try
+      {
+        $propel_object = sfPropelActAsRatableBehavior::retrieveFromReferenceKey(
+          $propel_object_name, $propel_object_ref
+        );
+      }
+      catch (Exception $e)
+      {
+        return $this->renderFatalError(
+          'Unable to retrieve ratable object: '.$e->getMessage());
+      }
+      
       if (is_null($propel_object))
       {
-        return $this->renderFatalError('Unable to retrieve ratable object from passed reference => '.$propel_object_ref);
+        return $this->renderFatalError(
+                 sprintf('Ratable object instance with key %s was not found',
+                         $propel_object_ref));
       }
+      
+      $already_rated = $propel_object->hasBeenRatedByUser($user_ref);
       
       // Retrieve Rating parameters from request and update object
       $propel_object->setRating((int)$rating, $user_ref);
-      $this->message = 'Thank you for your vote';
+      $this->message = $already_rated === true ?
+                       'Thanks for updating your vote' :
+                       'Thank you for your vote';
       $this->object = $propel_object;
     }
     catch (Exception $e)
@@ -83,6 +86,12 @@ class BasesfRatingActions extends sfActions
     }
   }
   
+  /**
+   * This methods will returns a basic user error message while logging a 
+   * complete one if provided in the debug log file 
+   * 
+   * @param string  $log_info  Log information message
+   */
   protected function renderFatalError($log_info = null)
   {
     if (!is_null($log_info))
