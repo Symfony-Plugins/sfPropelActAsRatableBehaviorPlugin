@@ -42,12 +42,13 @@ sfPropelBehavior::add('Article', array('sfPropelActAsRatableBehavior'));
 You can add this optionals parameters when applying the bahavior:
 
  * {{{max_rating}}}: sets the maximum rating available for an object (this must 
-   be an integer - default is 5)
+   be an integer greater than 0 - default is 5)
  * {{{reference_field}}}: sets the name of the field which will reference the 
-   object (by default it is automatically set to its primary key field, so 
-   leave this if you're unsure). A reference field can be a column name, a field
-   name or a Propel phpName, eg. {{{'StrippedTitle'}}}, {{{'stripped_title'}}} 
-   or {{{ArticlePeer::STRIPPED_TITLE}}}.
+   object (by default it is '''automatically set to its primary key field''', so 
+   leave this if you're unsure). A reference field can be: 
+   * a column name, eg. {{{ArticlePeer::STRIPPED_TITLE}}} 
+   * a field name, eg. {{{'StrippedTitle'}}}
+   * a Propel phpName, eg. {{{'stripped_title'}}} 
 
 Example of use of these parameters:
 
@@ -133,7 +134,8 @@ rated the object. Here we imagine a {{{User}}} object instance {{{$user}}} which
 member, an author, a person or anything like this.
 
 To set a rating for a given user ({{{$unique_user_reference}}} is a string representing a 
-unique reference to a user - eg. {{{md5($_SERVER['REMOTE_ADDR'])}}}) :
+unique reference to a user - eg. {{{md5($_SERVER['REMOTE_ADDR'])}}} or 
+{{{md5($user->getEmail())}}}) :
 
 {{{
 $article->setRating(10, $unique_user_reference);
@@ -188,7 +190,7 @@ The plugin is provided with a test suite located in the {{{./test}}} directory.
 To run the tests, type this line from the root of your project :
 
 {{{
-$ php plugins/sfPropelActAsRatableBehaviorPlugin/test/sfPropelActAsRatableBehaviorTest.php
+$ php plugins/sfPropelActAsRatableBehaviorPlugin/test/unit/sfPropelActAsRatableBehaviorTest.php
 }}}
 
 Note that you have to provide a Propel test object class name to run the test in the test file:
@@ -205,17 +207,19 @@ define('TEST_CLASS', 'Article');
  
 == Changelog ==
 
- * '''v0.6.2'''
+ * 2006-09-12 | v0.6.2
    * Reference keys are now stored as a md5 hash
-   * Corrected custom refrence keys handling bug in Ajax rater widget
- * '''v0.6.1'''
+   * Corrected custom reference keys handling bug in Ajax rater widget
+   * Added a {{{isRatable}}} static method in behavior class
+   * Some bugs corrected
+ * 2006-09-09 | v0.6.1
    * Added a way to specify a custom reference field to identify a ratable 
      Propel object
    * Added ability to set the maximum rating for an object when the behavior is
      added
    * Key length as also been decreased to avoid a strange MySQL bug on KEY length
    * Added unit tests
- * '''v0.6.0'''
+ * 2006-09-07 | v0.6.0
    * Added an AJAX rating system as a helper
    * Added constant MAX_RATING management for consistency control 
      in ratable model class
@@ -226,7 +230,7 @@ define('TEST_CLASS', 'Article');
      0.5.0. Hopefully, one day we'll have a migration system in Symfony core...
    * Removed configuration file to set up Propel object to unit test in the test
      suite
- * '''v0.5.0'''
+ * 2006-09-05 | v0.5.0
    * Initial release
    
 == Credits ==
