@@ -1,6 +1,8 @@
 <?php
 // Define your test Propel class with behavior applied here
 define('TEST_CLASS', 'Article');
+// Define a setter method for this article, other than primary key
+define('TEST_METHOD', 'setTitle');
 
 // Autofind the first available app environment
 $sf_root_dir = realpath(dirname(__FILE__).'/../../../../');
@@ -15,7 +17,6 @@ if (!$app)
 
 // Symfony test env bootstrap
 require_once($sf_root_dir.'/test/bootstrap/functional.php');
-require_once($sf_symfony_lib_dir.'/vendor/lime/lime.php');
 
 if (!defined('TEST_CLASS') or !class_exists(TEST_CLASS))
 {
@@ -23,25 +24,26 @@ if (!defined('TEST_CLASS') or !class_exists(TEST_CLASS))
   return;
 }
 
-$exceptions = array();
-
 // initialize database manager
 $databaseManager = new sfDatabaseManager();
 $databaseManager->initialize();
 $con = Propel::getConnection();
 
 // start tests
-$t = new lime_test(42, new lime_output_color());
-
-$t->ok(sfPropelActAsRatableBehavior::isRatable(TEST_CLASS), 
-       sprintf('isRatable() class %s is ratable', TEST_CLASS));
+$t = new lime_test(44, new lime_output_color());
 
 try
 {
-  $obj = _create_object();
+  $class = TEST_CLASS;
+  $obj = new $class;
+  if (!method_exists($obj, TEST_METHOD))
+  {
+    // Don't run test
+    return;
+  }
   $obj->setTitle('A test object');
   $obj->save();
-  $obj2 = _create_object();
+  $obj2 = new $class;
   $obj2->setTitle('Another test object');
   $obj2->save();
 }
@@ -49,6 +51,9 @@ catch (Exception $e)
 {
   $t->fail($e->getMessage());
 }
+
+$t->ok(sfPropelActAsRatableBehavior::isRatable(TEST_CLASS), 
+       sprintf('isRatable() class %s is ratable', TEST_CLASS));
 
 $obj_pk = $obj->getPrimaryKey();
 $t->ok(!is_null($obj_pk), 'getPrimaryKey() Test Object saved');
@@ -75,7 +80,8 @@ $t->is($obj->hasBeenRated(), false, 'hasBeenRated() Object has not been rated ye
 $user_1_hash = md5('200.123.123.123');
 $user_2_hash = md5('78.98.112.254');
 
-$t->ok(!$obj->hasBeenRatedByUser($user_1_hash), 'hasBeenRatedByUser() Object has not been rated by user 1 yet');
+$t->ok(!$obj->hasBeenRatedByUser($user_1_hash), 
+       'hasBeenRatedByUser() Object has not been rated by user 1 yet');
 
 # User 1 overrate object 1
 try
@@ -175,25 +181,17 @@ $t->is($obj->getRating(), 9, 'getRating() base12 ok');
 $obj->setRating(3, $user_1_hash);
 $t->is($obj->getRating(), 7.5, 'getRating() base12 ok');
 
-$t->diag('Tests are now terminated');
-
-// Delete objects
+// Testing cascade deletion
+$obj_key = $obj->getReferenceKey();
 $obj->delete();
+$c = new Criteria();
+$c->add(sfRatingPeer::RATABLE_ID, $obj_key);
+$count = sfRatingPeer::doCount($c);
+$t->is($count, 0, 'doCount() No more rating records for deleted object');
+$obj_exists = sfPropelActAsRatableBehavior::retrieveFromReferenceKey(TEST_CLASS, $obj_key);
+$t->is($obj_exists, NULL, 'retrieveFromReferenceKey() does not find fantom objects');
+
+// Delete remaining object
 $obj2->delete();
 
-
-// test object creation
-function _create_object()
-{
-  if (!defined('TEST_CLASS') or is_null(TEST_CLASS))
-  {
-    throw new Exception('No TEST_CLASS constant has been defined');
-  }
-  if (!class_exists(TEST_CLASS))
-  {
-    throw new Exception(sprintf('Unknow class "%s". Did you clear the cache ?', 
-                                TEST_CLASS));
-  }
-  $classname = TEST_CLASS;
-  return new $classname;
-}
+$t->diag('Tests are now terminated');

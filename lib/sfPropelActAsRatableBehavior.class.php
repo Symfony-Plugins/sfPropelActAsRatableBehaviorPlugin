@@ -347,7 +347,7 @@ class sfPropelActAsRatableBehavior
     if (!class_exists($object_name))
     {
       throw new sfPropelActAsRatableException(
-                  sprintf('Unknown class %', $object_name));
+                  sprintf('Unknown class %s', $object_name));
     }
     $base_class = sprintf('Base%s', ucfirst($object_name));
     return !is_null(sfMixer::getCallable($base_class.':getReferenceKey'));
@@ -467,6 +467,26 @@ class sfPropelActAsRatableBehavior
         sprintf('propel_behavior_sfPropelActAsRatableBehavior_%s_reference_field_type',
                 get_class($object)), 
                 $propel_type);
+  }
+  
+  /**
+   * Deletes all rating for a ratable object (delete cascade emulation)
+   * 
+   * @param  BaseObject  $object
+   */
+  public function preDelete(BaseObject $object)
+  {
+    try
+    {
+      $c = new Criteria();
+      $c->add(sfRatingPeer::RATABLE_ID, $object->getReferenceKey());
+      sfRatingPeer::doDelete($c);
+    }
+    catch (Exception $e)
+    {
+      throw new sfPropelActAsRatableException(
+        'Unable to delete ratable object related ratings records');
+    }
   }
 
 }
