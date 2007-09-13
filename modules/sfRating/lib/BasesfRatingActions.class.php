@@ -78,6 +78,8 @@ class BasesfRatingActions extends sfActions
       $this->message = $already_rated === true ?
                        'Thanks for updating your vote' :
                        'Thank you for your vote';
+      // This is useful id escaping has been enabled (no decorated object type modification)
+      $this->object_class = $propel_object_name;
       $this->object = $propel_object;
     }
     catch (Exception $e)
