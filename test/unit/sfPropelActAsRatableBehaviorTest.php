@@ -1,6 +1,6 @@
 <?php
 // Define your test Propel class with behavior applied here
-define('TEST_CLASS', 'Article');
+define('TEST_CLASS', 'sfTestObject');
 // Define a setter method for this article, other than primary key
 define('TEST_METHOD', 'setTitle');
 
@@ -17,6 +17,7 @@ if (!$app)
 
 // Symfony test env bootstrap
 require_once($sf_root_dir.'/test/bootstrap/functional.php');
+require_once($sf_symfony_lib_dir.'/vendor/lime/lime.php');
 
 if (!defined('TEST_CLASS') or !class_exists(TEST_CLASS))
 {
@@ -38,7 +39,7 @@ try
   $obj = new $class;
   if (!method_exists($obj, TEST_METHOD))
   {
-    // Don't run test
+    // Don't run tests at all
     return;
   }
   $obj->setTitle('A test object');
@@ -52,7 +53,7 @@ catch (Exception $e)
   $t->fail($e->getMessage());
 }
 
-$t->ok(sfPropelActAsRatableBehavior::isRatable(TEST_CLASS), 
+$t->is(sfPropelActAsRatableBehavior::isRatable(TEST_CLASS), true, 
        sprintf('isRatable() class %s is ratable', TEST_CLASS));
 
 $obj_pk = $obj->getPrimaryKey();
