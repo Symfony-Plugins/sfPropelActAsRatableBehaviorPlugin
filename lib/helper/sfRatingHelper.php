@@ -79,3 +79,21 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
     sfLogger::getInstance()->debug('Exception catched from sf_rater helper: '.$e->getMessage());
   }
 }
+
+/**
+ * Shows rating details for given ratable object
+ * 
+ * @param  BaseObject  $propel_object
+ * @return string
+ **/
+function sf_rating_details($propel_object)
+{
+  /* TODO:
+   *  .write object rating/n stars in a div
+   *  .put a rollover on it
+   *  .on rollover call ajax action 'ratingDetails' for object
+   *  .update a floating div with result
+   *  .on rollout clear the floating div
+   * 
+   */
+}
