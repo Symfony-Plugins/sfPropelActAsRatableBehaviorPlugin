@@ -31,7 +31,7 @@ $databaseManager->initialize();
 $con = Propel::getConnection();
 
 // start tests
-$t = new lime_test(44, new lime_output_color());
+$t = new lime_test(47, new lime_output_color());
 
 try
 {
@@ -52,9 +52,6 @@ catch (Exception $e)
 {
   $t->fail($e->getMessage());
 }
-
-$t->is(sfPropelActAsRatableBehavior::isRatable(TEST_CLASS), true, 
-       sprintf('isRatable() class %s is ratable', TEST_CLASS));
 
 $obj_pk = $obj->getPrimaryKey();
 $t->ok(!is_null($obj_pk), 'getPrimaryKey() Test Object saved');
@@ -80,6 +77,7 @@ $t->is($obj->hasBeenRated(), false, 'hasBeenRated() Object has not been rated ye
 // Tests will be IP address based
 $user_1_hash = md5('200.123.123.123');
 $user_2_hash = md5('78.98.112.254');
+$user_3_hash = md5('12.34.56.78');
 
 $t->ok(!$obj->hasBeenRatedByUser($user_1_hash), 
        'hasBeenRatedByUser() Object has not been rated by user 1 yet');
@@ -181,6 +179,19 @@ $obj->setRating(12, $user_2_hash);
 $t->is($obj->getRating(), 9, 'getRating() base12 ok');
 $obj->setRating(3, $user_1_hash);
 $t->is($obj->getRating(), 7.5, 'getRating() base12 ok');
+
+// Testing ratings details retrieval
+$obj->setRating(6, $user_1_hash);
+$obj->setRating(6, $user_2_hash);
+$obj->setRating(7, $user_3_hash);
+$details = $obj->getRatingDetails();
+$t->is(count($details), 2, 'getRatingDetails() count ok');
+$t->is_deeply($details, array(6 => 2, 7 => 1), 'getRatingDetails() results are conform');
+
+$full_details = $obj->getRatingDetails(true);
+$t->is(count($full_details), 12, 'getRatingDetails(true) count ok');
+$expected = array(0=>0, 1=>0, 2=>0, 3=>0, 4=>0, 5=>0, 6=>2, 7=>1, 8=>0, 9=>0, 10=>0, 11=>0, 12=>0);
+$t->is_deeply($full_details, $expected, 'getRatingDetails(true) results are conform');
 
 // Testing cascade deletion
 $obj_key = $obj->getReferenceKey();

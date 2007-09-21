@@ -15,6 +15,7 @@
  * @package    plugins
  * @subpackage rating 
  * @author     Nicolas Perriault <nperriault@gmail.com>
+ * @author     Fabian Lange
  */
 class sfPropelActAsRatableBehavior
 {
@@ -311,6 +312,50 @@ class sfPropelActAsRatableBehavior
   }
   
   /**
+   * Gets the object rating details
+   *
+   * @author Fabian Lange
+   * @author Nicolas Perriault
+   * @param  BaseObject  $object
+   * @param  boolean     $include_all  Shall we include all available ratings?
+   * @return associative array containing (rating => count)
+   **/
+  public function getRatingDetails(BaseObject $object, $include_all = false)
+  {
+    $c = new Criteria();
+    $c->add(sfRatingPeer::RATABLE_ID, $object->getReferenceKey());
+    $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
+    $c->clearSelectColumns();
+    $c->addAsColumn('nb_ratings', 'COUNT('.sfRatingPeer::ID.')');
+    $c->addAsColumn('rating', sfRatingPeer::RATING);
+    $c->addGroupByColumn(sfRatingPeer::RATING);
+    $p = array();
+    $sql = BasePeer::createSelectSql($c, $p);
+    $con = Propel::getConnection();
+    $stmt = $con->prepareStatement($sql);
+    $stmt->setString(1, $object->getReferenceKey());
+    $stmt->setString(2, get_class($object));
+    $rs = $stmt->executeQuery(ResultSet::FETCHMODE_ASSOC);
+    $details = array();
+    while ($rs->next())
+    {
+      $details = $details + array ($rs->getInt('rating') => (int)$rs->getString('nb_ratings'));
+    }
+    if ($include_all === true)
+    {
+      for ($i=1; $i<=$object->getMaxRating(); $i++)
+      {
+        if (!array_key_exists($i, $details))
+        {
+          $details[$i] = 0;
+        }
+      }
+    }
+    ksort($details);
+    return $details;
+  }
+  
+  /**
    * Gets the object rating for given user pk
    *
    * @param  BaseObject  $object
@@ -332,25 +377,6 @@ class sfPropelActAsRatableBehavior
     {
       return $rating_object->getRating();
     }
-  }
-  
-  /**
-   * Returns true if the passed model name is ratable
-   * 
-   * @author     Xavier Lacot
-   * @author     Nicolas Perriault
-   * @param      string  $object_name
-   * @return     boolean
-   */
-  public static function isRatable($object_name)
-  {
-    if (!class_exists($object_name))
-    {
-      throw new sfPropelActAsRatableException(
-                  sprintf('Unknown class %s', $object_name));
-    }
-    $base_class = sprintf('Base%s', ucfirst($object_name));
-    return !is_null(sfMixer::getCallable($base_class.':getReferenceKey'));
   }
   
   /**

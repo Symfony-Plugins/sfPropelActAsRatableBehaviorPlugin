@@ -166,6 +166,39 @@ To clear user rating :
 $article->clearRating($unique_user_reference);
 }}}
 
+To retrieve rating details :
+
+{{{
+$details = $article->getRatingDetails();
+}}}
+
+Results will be this form:
+
+{{{
+array(
+  2 => 12, // 12 people has rated the object 2
+  5 => 7   // 7 people has rated the object 5
+)
+}}}
+
+You can also retrieve details for all available ratings:
+
+{{{
+$full_details = $article->getRatingDetails(true);
+}}}
+
+Results will be this form:
+
+{{{
+array(
+  1 => 0,  // Nobody has rated the object 1
+  2 => 12, // 12 people has rated the object 2
+  3 => 0,  // Nobody has rated the object 3
+  4 => 0,  // Nobody has rated the object 4
+  5 => 7,  // 7 people has rated the object 5
+)
+}}}
+
 To clear all ratings for the object :
 
 {{{
@@ -199,27 +232,45 @@ Note that you have to provide a Propel test object class name to run the test in
 define('TEST_CLASS', 'Article');
 }}}
 
+== Uninstallation ==
+
+{{{
+symfony plugin-uninstall symfony/sfPropelActAsRatableBehaviorPlugin
+}}}
+
+You will need to remove the behavior to all your model, then rebuild your model
+and purge your cache.
+
 == TODO ==
 
  * Manage messages i18n
  * Add functional tests
- * ~~Add a component to provide a rating interface, AJAX based~~ added in v0.6.0
  
 == Changelog ==
 
- * 2006-09-12 | v0.6.2
+=== 2007-09-21 | v0.6.3 ===
+
+ * added Fabian Lange patch to allow ratings details retrieval
+ * removed sfPropelActAsRatableBehavior::isRatable() bugguy method
+
+=== 2007-09-12 | v0.6.2 ===
+
    * Reference keys are now stored as a md5 hash
    * Corrected custom reference keys handling bug in Ajax rater widget
    * Added a {{{isRatable}}} static method in behavior class
    * Some bugs corrected
- * 2006-09-09 | v0.6.1
+
+=== 2007-09-09 | v0.6.1 ===
+
    * Added a way to specify a custom reference field to identify a ratable 
      Propel object
    * Added ability to set the maximum rating for an object when the behavior is
      added
    * Key length as also been decreased to avoid a strange MySQL bug on KEY length
    * Added unit tests
- * 2006-09-07 | v0.6.0
+
+=== 2007-09-07 | v0.6.0 ===
+
    * Added an AJAX rating system as a helper
    * Added constant MAX_RATING management for consistency control 
      in ratable model class
@@ -230,7 +281,9 @@ define('TEST_CLASS', 'Article');
      0.5.0. Hopefully, one day we'll have a migration system in Symfony core...
    * Removed configuration file to set up Propel object to unit test in the test
      suite
- * 2006-09-05 | v0.5.0
+
+=== 2007-09-05 | v0.5.0 ===
+
    * Initial release
    
 == Credits ==
