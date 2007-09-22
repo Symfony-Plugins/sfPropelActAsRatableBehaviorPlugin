@@ -1,3 +1,7 @@
+table.rating_details_table td div {
+	background: blue;
+}
+
 /**
  * Based on http://komodomedia.com/blog/samples/star_rating/example2.htm
  * Styles for the star rater 

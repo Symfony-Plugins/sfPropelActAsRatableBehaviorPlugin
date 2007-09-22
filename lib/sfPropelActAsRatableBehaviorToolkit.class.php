@@ -38,7 +38,12 @@ class sfPropelActAsRatableBehaviorToolkit
    */
   public static function getUserPK()
   {
-    $return = null;
+    // sgGuard detection and guard user id retrieval
+    if (class_exists('sfGuardSecurityUser')
+        && is_callable(sfContext::getInstance()->getUser(), 'getGuardUser'))
+    {
+      return sfContext::getInstance()->getUser()->getGuardUser()->getId();
+    }
     
     // Function
     $function = sfConfig::get('app_rating_user_pk_function');
@@ -49,7 +54,7 @@ class sfPropelActAsRatableBehaviorToolkit
         throw new sfPropelActAsRatableException(
           sprintf('Function "%s" does not exist', $function));
       }
-      $return = $function();
+      return $function();
     }
     
     // Class::method
@@ -62,10 +67,8 @@ class sfPropelActAsRatableBehaviorToolkit
         throw new sfPropelActAsRatableException(
           sprintf('Static method "%s::%s()" does not exist', $class, $method));
       }
-      $return = call_user_func(array(get_class($class), $method));
+      return call_user_func(array(get_class($class), $method));
     }
-    
-    return $return; 
   }
 
 }

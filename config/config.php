@@ -13,6 +13,7 @@ sfPropelBehavior::registerHooks('sfPropelActAsRatableBehavior', array (
 ));
 
 sfPropelBehavior::registerMethods('sfPropelActAsRatableBehavior', array (
+  array('sfPropelActAsRatableBehavior', 'countRatings'),
   array('sfPropelActAsRatableBehavior', 'setRating'),
   array('sfPropelActAsRatableBehavior', 'getMaxRating'),
   array('sfPropelActAsRatableBehavior', 'getRating'),

@@ -26,7 +26,8 @@ Stable versions are available in the
 {{{[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/tags tags]}}} 
 folder, experimental ones in the 
 {{{[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/branches branches]}}} 
-one and the current alpha in the {{{[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/trunk trunk]}}}.
+one and the current alpha in the 
+{{{[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/trunk trunk]}}}.
 
 '''Caution: Never use the trunk version in a production environment.'''
 
@@ -149,6 +150,14 @@ Then, you can use the {{{sf_rater}}} helper in any of your templates:
 {{{
 <?php sfLoader::loadHelpers('sfRating') ?>
 <?php echo sf_rater($article) ?>
+}}}
+
+== Using the rating details component ==
+
+Just call the component from any of your templates:
+
+{{{
+<?php include_component('sfRating', 'ratingDetails', array('object' => $article_instance) ?>
 }}}
 
 == API Usage ==
@@ -282,6 +291,7 @@ and purge your cache.
    {{{getPrimaryKey()}}} method: fast, portable and reliable
  * removed sfPropelActAsRatableBehavior::isRatable() bugguy method
  * added Fabian Lange patch to allow ratings details retrieval
+ * added a component to display rating details graphically
 
 === 2007-09-12 | v0.6.2 ===
 
@@ -312,7 +322,13 @@ and purge your cache.
 === 2007-09-05 | v0.5.0 ===
 
  * Initial release
-   
+
+== Maintener ==
+
+This plugin is maintened by Nicolas Perriault (nperriault -> gmail.com)
+
+Feel free to send feture request, enhancement suggestion or idealy a patch.
+ 
 == Credits ==
 
  * The eye-candy star-based Ajax system is based on the great work of 

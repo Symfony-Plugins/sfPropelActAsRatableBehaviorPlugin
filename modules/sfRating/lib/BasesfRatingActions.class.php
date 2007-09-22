@@ -98,32 +98,6 @@ class BasesfRatingActions extends sfActions
   }
   
   /**
-   * Gets object rating details and end it to according view
-   * 
-   */
-  public function executeRatingDetails()
-  {
-    $propel_object_name = $this->getRequestParameter('o');
-    $propel_object_id = $this->getRequestParameter('id');
-    
-    if ($this->getRequest()->getMethod() !== sfRequest::POST)
-    {
-      return $this->renderText('POST requests only');
-    }
-    
-    $propel_object = $this->getRatableObject($propel_object_name, 
-                                             $propel_object_id);
-    
-    if (is_null($propel_object))
-    {
-      return $this->renderFatalError(
-               'Unable to retrieve ratable object: '.$e->getMessage());
-    }
-    
-    $this->rating_details = $propel_object->getRatingDetails(true);
-  }
-
-  /**
    * Retrieve a ratable Propel object from parameters
    * 
    * @return BaseObject

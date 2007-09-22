@@ -24,6 +24,20 @@ class sfPropelActAsRatableBehavior
    * Default default max rating
    */
   const DEFAULT_MAX_RATING = 5;
+  
+  /**
+   * Counts ratings made on given ratable object 
+   * 
+   * @param  BaseObject  $object
+   * @return int
+   */
+  public function countRatings(BaseObject $object)
+  {
+    $c = new Criteria();
+    $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+    $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
+    return sfRatingPeer::doCount($c);
+  }
 
   
   /**
@@ -187,10 +201,10 @@ class sfPropelActAsRatableBehavior
    * Retrieves the object rating
    *
    * @param  BaseObject  $object
-   * @param  int         $floating_point
+   * @param  int         $precision   Result float precision (default 2)
    * @return float
    **/
-  public function getRating(BaseObject $object, $floating_point=2)
+  public function getRating(BaseObject $object, $precision=2)
   {
     $c = new Criteria();
     $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
@@ -198,22 +212,20 @@ class sfPropelActAsRatableBehavior
     $c->clearSelectColumns();
     $c->addAsColumn('nb_ratings', 'COUNT('.sfRatingPeer::ID.')');
     $c->addAsColumn('total', 'SUM('.sfRatingPeer::RATING.')');
-    $p = array();
-    $sql = BasePeer::createSelectSql($c, $p);
-    $con = Propel::getConnection();
-    $stmt = $con->prepareStatement($sql);
-    $stmt->setString(1, $object->getPrimaryKey());
-    $stmt->setString(2, get_class($object));
-    $rs = $stmt->executeQuery(ResultSet::FETCHMODE_ASSOC);
-    $rs->next();
-    $nb_ratings = $rs->getString('nb_ratings');
-    $total      = $rs->getString('total');
-    if (!$nb_ratings or $nb_ratings === 0)
+    $c->addGroupByColumn(sfRatingPeer::RATABLE_MODEL);
+    $rs = sfRatingPeer::doSelectRS($c);
+    $rs->setFetchmode(ResultSet::FETCHMODE_ASSOC);
+    while ($rs->next())
     {
-      return NULL; // Object has not been rated yet
+      $nb_ratings = $rs->getInt('nb_ratings');
+      $total      = $rs->getInt('total');
+      if (!$nb_ratings or $nb_ratings === 0)
+      {
+        return NULL; // Object has not been rated yet
+      }
+      return round($total / $nb_ratings,
+                   sfConfig::get('app_rating_precision', $precision));
     }
-    return round($total / $nb_ratings,
-                 sfConfig::get('app_rating_floatingpoint', $floating_point));
   }
   
   /**
@@ -234,13 +246,8 @@ class sfPropelActAsRatableBehavior
     $c->addAsColumn('nb_ratings', 'COUNT('.sfRatingPeer::ID.')');
     $c->addAsColumn('rating', sfRatingPeer::RATING);
     $c->addGroupByColumn(sfRatingPeer::RATING);
-    $p = array();
-    $sql = BasePeer::createSelectSql($c, $p);
-    $con = Propel::getConnection();
-    $stmt = $con->prepareStatement($sql);
-    $stmt->setString(1, $object->getPrimaryKey());
-    $stmt->setString(2, get_class($object));
-    $rs = $stmt->executeQuery(ResultSet::FETCHMODE_ASSOC);
+    $rs = sfRatingPeer::doSelectRS($c);
+    $rs->setFetchmode(ResultSet::FETCHMODE_ASSOC);
     $details = array();
     while ($rs->next())
     {
