@@ -15,9 +15,22 @@ symfony plugin-install http://plugins.symfony-project.com/sfPropelActAsRatableBe
 
 The source code is also available:
  * [source:plugins/sfPropelActAsRatableBehaviorPlugin from the code browser]
- * [http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/ from the SVN repository]
+ * [http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/ from 
+   the SVN repository] (please always use a tagged version in production)
+   
+=== SVN repository ===
 
+The plugin is also available through the Symfony SVN repository.
 
+Stable versions are available in the 
+{{{[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/tags tags]}}} 
+folder, experimental ones in the 
+{{{[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/branches branches]}}} 
+one and the current alpha in the {{{[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/trunk trunk]}}}.
+
+'''Caution: Never use the trunk version in a production environment.'''
+
+== Configuration ==
 
 To activate this Propel behavior in Symfony, you must first activate behaviors 
 in your propel.ini file :
@@ -37,33 +50,21 @@ class Article extends BaseArticle
 sfPropelBehavior::add('Article', array('sfPropelActAsRatableBehavior'));
 }}}
 
-=== Behavior optional parameters ===
-
-You can add this optionals parameters when applying the bahavior:
-
- * {{{max_rating}}}: sets the maximum rating available for an object (this must 
-   be an integer greater than 0 - default is 5)
- * {{{reference_field}}}: sets the name of the field which will reference the 
-   object (by default it is '''automatically set to its primary key field''', so 
-   leave this if you're unsure). A reference field can be: 
-   * a column name, eg. {{{ArticlePeer::STRIPPED_TITLE}}} 
-   * a field name, eg. {{{'StrippedTitle'}}}
-   * a Propel phpName, eg. {{{'stripped_title'}}} 
-
-Example of use of these parameters:
+You can add a {{{max_rating}}} parameter to the behavior, which will sets the 
+maximum rating available for an object (this must be an integer greater than 0 - 
+default is 5). For example, if you want a 10 based rating system for your 
+{{{Article}}} object :
 
 {{{
 <?php
 class Article extends BaseArticle
 {
 }
-sfPropelBehavior::add('Article', 
-                      array('sfPropelActAsRatableBehavior',
-                            array('max_rating'      => 10,
-                                  'reference_field' => ArticlePeer::STRIPPED_TITLE)));
+sfPropelBehavior::add('Article', array('sfPropelActAsRatableBehavior',
+                                       array('max_rating' => 10)));
 }}}
 
-Then, rebuild your model :
+Now, you have to rebuild your model :
 
 {{{
 symfony propel-build-all
@@ -74,6 +75,43 @@ And clear the cache :
 {{{
 symfony cc
 }}}
+
+== Rating consistency ==
+
+A clean way to ensure rating consistency is to associate a rating to a unique 
+identified user reference stored in server side, typically the primary key of a 
+user record in your database.
+
+If no user reference can be retrieved, the plugin will rely on cookies, but you 
+should consider this alternative solution with caution, as cookies are easily 
+deletable by the user.
+
+== User reference retrieval configuration ==
+
+By default, the plugin will search for an sfGuardPlugin installation to retrieve
+authenticated user primary key. If you are using sfGuard, you have nothing more to
+configure.
+
+But if you don't, you can specify the way a unique user reference (eg. primary key) 
+will be retrieved, using these available plugin settings in your {{{app.yml}}} file:
+
+ * You can specify a PHP function, eg. {{{get_connected_user_id()}}}:
+
+{{{
+  rating:
+    user_pk_function:    get_connected_user_id  
+}}}
+
+ * Or a static method of a PHP class, eg. 
+   {{{MyCustomUtilsClass::retrieveConnectedUserId()}}}:
+
+{{{
+  rating:
+    user_pk_class:       MyCustomUtilsClass
+    user_pk_method:      retrieveConnectedUserId
+}}}
+
+The return value of these calls should always be the primary key of your connected user.
 
 == Using the Ajax rating system ==
 
@@ -106,45 +144,33 @@ project_root
         alt_star.gif
 }}}
 
-Then, you can use the {{{sf_rater}}} helper in any of your template:
+Then, you can use the {{{sf_rater}}} helper in any of your templates:
 
 {{{
-<?php use_helper('sfRating') ?>
-<?php echo sf_rater($article, md5($user->getId()) ?>
-}}}
-
-... where {{{$article}}} is of course an instance of your {{{Article}}} propel 
-class and {{{$user->getId()}}} is an optional unique reference to the user 
-currently rating your object.
-
-The unique user reference can be an IP address:
-
-{{{
-<?php use_helper('sfRating') ?>
-<?php echo sf_rater($article, md5($_SERVER['REMOTE_ADDR']) ?>
+<?php sfLoader::loadHelpers('sfRating') ?>
+<?php echo sf_rater($article) ?>
 }}}
 
 == API Usage ==
 
-You can rate your previously configured {{{Article}}} objects through the 
-new API which as been dynamically added to your object by the behavior.
+Note: In below examples, {{{$user_id}}} is a string representing a 
+unique reference to a user, eg. if you're using the sfGuardPlugin, 
+{{{sfContext::getInstance()->getUser()->getGuardUser()->getId()}}}.
 
-Note that you can provide a user PK to determine if one of your user has already 
-rated the object. Here we imagine a {{{User}}} object instance {{{$user}}} which represent a 
-member, an author, a person or anything like this.
+This parameter is always optional. If you don't provide it, the 
+[#UserReferenceRetrievalConfiguration configured user reference retrieval configuration]
+will apply.
 
-To set a rating for a given user ({{{$unique_user_reference}}} is a string representing a 
-unique reference to a user - eg. {{{md5($_SERVER['REMOTE_ADDR'])}}} or 
-{{{md5($user->getEmail())}}}) :
+To set a rating for a given user:
 
 {{{
-$article->setRating(10, $unique_user_reference);
+$article->setRating(10, $user_id);
 }}}
 
 To retrieve user rating for this object :
 
 {{{
-$article->getUserRating($unique_user_reference);
+$article->getUserRating($user_id);
 }}}
 
 To get the average rating of the object :
@@ -163,7 +189,7 @@ $article->getMaxRating();
 To clear user rating :
 
 {{{
-$article->clearRating($unique_user_reference);
+$article->clearRating($user_id);
 }}}
 
 To retrieve rating details :
@@ -214,7 +240,7 @@ $article->hasBeenRated();
 You can also test if the object has already been rated by a particular user:
 
 {{{
-$article->hasBeenRatedByUser($unique_user_reference);
+$article->hasBeenRatedByUser($user_id);
 }}}
 
 == Unit testing ==
@@ -248,43 +274,44 @@ and purge your cache.
  
 == Changelog ==
 
-=== 2007-09-21 | v0.6.3 ===
+=== 2007-09-22 | v0.7 ===
 
- * added Fabian Lange patch to allow ratings details retrieval
+ * big behavior refactoring, with model and API BC (sorry for that, but it is much
+   better now)
+ * removed ugly reference field configuration and behavior methods, now we use object 
+   {{{getPrimaryKey()}}} method: fast, portable and reliable
  * removed sfPropelActAsRatableBehavior::isRatable() bugguy method
+ * added Fabian Lange patch to allow ratings details retrieval
 
 === 2007-09-12 | v0.6.2 ===
 
-   * Reference keys are now stored as a md5 hash
-   * Corrected custom reference keys handling bug in Ajax rater widget
-   * Added a {{{isRatable}}} static method in behavior class
-   * Some bugs corrected
+ * Reference keys are now stored as a md5 hash
+ * Corrected custom reference keys handling bug in Ajax rater widget
+ * Added a {{{isRatable}}} static method in behavior class
+ * Some bugs corrected
 
 === 2007-09-09 | v0.6.1 ===
 
-   * Added a way to specify a custom reference field to identify a ratable 
-     Propel object
-   * Added ability to set the maximum rating for an object when the behavior is
-     added
-   * Key length as also been decreased to avoid a strange MySQL bug on KEY length
-   * Added unit tests
+ * Added a way to specify a custom reference field to identify a ratable Propel object
+ * Added ability to set the maximum rating for an object when the behavior is added
+ * Key length as also been decreased to avoid a strange MySQL bug on KEY length
+ * Added unit tests
 
 === 2007-09-07 | v0.6.0 ===
 
-   * Added an AJAX rating system as a helper
-   * Added constant MAX_RATING management for consistency control 
-     in ratable model class
-   * Moved int fields to varchar for storing unique user reference descriptor
+ * Added an AJAX rating system as a helper
+ * Added constant MAX_RATING management for consistency control in ratable model class
+ * Moved int fields to varchar for storing unique user reference descriptor
      (eg. storing the IP address, an email, a md5 hash, etc.)
-   * {{{sfRatings}}} table has been renamed to {{{sf_ratings}}}: you have to 
+ * {{{sfRatings}}} table has been renamed to {{{sf_ratings}}}: you have to 
      rebuild your SQL files and insert them in your DB if you upgrade from 
      0.5.0. Hopefully, one day we'll have a migration system in Symfony core...
-   * Removed configuration file to set up Propel object to unit test in the test
+ * Removed configuration file to set up Propel object to unit test in the test
      suite
 
 === 2007-09-05 | v0.5.0 ===
 
-   * Initial release
+ * Initial release
    
 == Credits ==
 

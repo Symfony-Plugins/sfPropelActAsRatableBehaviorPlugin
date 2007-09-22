@@ -39,48 +39,57 @@ class BasesfRatingActions extends sfActions
       
       // Retrieve parameters from request
       $propel_object_name = $this->getRequestParameter('o');
-      $propel_object_ref = $this->getRequestParameter('id');
+      $propel_object_id = $this->getRequestParameter('id');
       $rating = $this->getRequestParameter('rating');
-      $user_ref = trim((string)$this->getRequestParameter('uref'));
-      if ($user_ref === '')
-      {
-        $user_ref = NULL;
-      }
-      if (!($propel_object_name && $propel_object_ref && !is_null($rating)))
-      {
-        return $this->renderFatalError('Parameters are missing');
-      }
       
-      // Retrieve Propel object instance
-      try
-      {
-        $propel_object = sfPropelActAsRatableBehavior::retrieveFromReferenceKey(
-          $propel_object_name, $propel_object_ref
-        );
-      }
-      catch (Exception $e)
+      
+      // Retrieve ratable propel object
+      if (!($propel_object_name && $propel_object_id && !is_null($rating)))
       {
         return $this->renderFatalError(
-          'Unable to retrieve ratable object: '.$e->getMessage());
+                 'Parameters are missing to retrieve ratable object');
       }
+      
+      $propel_object = $this->getRatableObject($propel_object_name, 
+                                               $propel_object_id);      
       
       if (is_null($propel_object))
       {
         return $this->renderFatalError(
-                 sprintf('Ratable object instance with key %s was not found',
-                         $propel_object_ref));
+                 'Unable to retrieve ratable object: '.$e->getMessage());
       }
       
-      $already_rated = $propel_object->hasBeenRatedByUser($user_ref);
+      // User retrieval
+      $user_id = sfPropelActAsRatableBehaviorToolkit::getUserPK();
+      if (is_null($user_id))
+      {
+        // Votes are cookie based
+        $cookie_name = sprintf('rating_%s_%d', $propel_object_name, $propel_object_id);
+        if (!is_null($this->getRequest()->getCookie($cookie_name)))
+        {
+          $message = 'You have already voted';
+        }
+        else
+        {
+          $propel_object->setRating((int) $rating);
+          $cookie_expires = date('Y-m-d H:m:i', time() + (86400*365*10));
+          $this->getResponse()->setCookie($cookie_name, (int)$rating, $cookie_expires);
+          $message = 'Thank you for your vote';
+        }
+      }
+      else
+      {
+        $already_rated = $propel_object->hasBeenRatedByUser($user_id);
+        $propel_object->setRating((int) $rating, $user_id);
+        $message = $already_rated === true ?
+                         'Thanks for updating your vote' :
+                         'Thank you for your vote';
+      }
       
-      // Retrieve Rating parameters from request and update object
-      $propel_object->setRating((int)$rating, $user_ref);
-      $this->message = $already_rated === true ?
-                       'Thanks for updating your vote' :
-                       'Thank you for your vote';
-      // This is useful id escaping has been enabled (no decorated object type modification)
+      // This is useful if escaping has been enabled (no decorated object type modification)
       $this->object_class = $propel_object_name;
       $this->object = $propel_object;
+      $this->message = $message;
     }
     catch (Exception $e)
     {
@@ -95,27 +104,35 @@ class BasesfRatingActions extends sfActions
   public function executeRatingDetails()
   {
     $propel_object_name = $this->getRequestParameter('o');
-    $propel_object_ref = $this->getRequestParameter('id');
+    $propel_object_id = $this->getRequestParameter('id');
     
     if ($this->getRequest()->getMethod() !== sfRequest::POST)
     {
-      //return $this->renderText('POST requests only');
+      return $this->renderText('POST requests only');
     }
     
-    // Retrieve Propel object instance
-    try
-    {
-      $propel_object = sfPropelActAsRatableBehavior::retrieveFromReferenceKey(
-        $propel_object_name, $propel_object_ref
-      );
-    }
-    catch (Exception $e)
+    $propel_object = $this->getRatableObject($propel_object_name, 
+                                             $propel_object_id);
+    
+    if (is_null($propel_object))
     {
       return $this->renderFatalError(
-        'Unable to retrieve ratable object: '.$e->getMessage());
+               'Unable to retrieve ratable object: '.$e->getMessage());
     }
     
     $this->rating_details = $propel_object->getRatingDetails(true);
+  }
+
+  /**
+   * Retrieve a ratable Propel object from parameters
+   * 
+   * @return BaseObject
+   */
+  protected function getRatableObject($class_name, $id)
+  {
+    $peer = $class_name.'Peer';
+    $object = call_user_func(array($peer, 'retrieveByPK'), $id);
+    return $object;
   }
   
   /**

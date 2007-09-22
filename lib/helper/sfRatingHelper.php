@@ -4,17 +4,16 @@
  * 
  * @author Nicolas Perriault <nperriault@gmail.com>
  */
-use_helper('Javascript', 'Tag');
+sfLoader::loadHelpers('Javascript', 'Tag');
 /**
  * Return the HTML code for a unordered list showing rating stars
  * 
  * @param  BaseObject  $propel_object  Propel object instance
- * @param  mixed       $user_ref       Unique user reference
  * @param  array       $options        Array of HTML options to apply on the HTML list
  * @throws sfPropelActAsRatableException
  * @return string
  **/
-function sf_rater($propel_object, $user_ref=null, $options = array())
+function sf_rater($propel_object, $options = array())
 {
   if (is_null($propel_object) or !$propel_object instanceof BaseObject)
   {
@@ -45,9 +44,9 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
     }
     
     $propel_object_class = get_class($propel_object);
-    $reference_key = $propel_object->getReferenceKey();
-    $msg_domid = sprintf('rating_message_%s_%s', $propel_object_class, $reference_key) ;
-    $bar_domid = sprintf('current_rating_%s_%s', $propel_object_class, $reference_key) ;
+    $id = $propel_object->getPrimaryKey();
+    $msg_domid = sprintf('rating_message_%s_%s', $propel_object_class, $id) ;
+    $bar_domid = sprintf('current_rating_%s_%s', $propel_object_class, $id) ;
     
     $list_content  = '  <li class="current-rating" id="'.$bar_domid.'" style="width:'.$bar_width.'px;">';
     $list_content .= sprintf('Currently rated %s star(s) on %d', 
@@ -58,11 +57,10 @@ function sf_rater($propel_object, $user_ref=null, $options = array())
     for ($i=1; $i <= $max_rating; $i++)
     {
       $list_content .= '  <li>'.link_to_remote(sprintf('Rate it %d stars', $i), 
-                    array('url'      => sprintf('sfRating/rate?o=%s&id=%s&rating=%d&uref=%s', 
+                    array('url'      => sprintf('sfRating/rate?o=%s&id=%s&rating=%d', 
                                                 $propel_object_class, 
-                                                $reference_key, 
-                                                $i,
-                                                $user_ref),
+                                                $id, 
+                                                $i),
                           'update'   => $msg_domid,
                           'script'   => true,
                           'complete' => visual_effect('appear', $msg_domid).

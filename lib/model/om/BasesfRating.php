@@ -21,11 +21,11 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 
 
 	
-	protected $user_reference;
+	protected $user_id;
 
 
 	
-	protected $rating;
+	protected $rating = 1;
 
 	
 	protected $alreadyInSave = false;
@@ -55,10 +55,10 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 	}
 
 	
-	public function getUserReference()
+	public function getUserId()
 	{
 
-		return $this->user_reference;
+		return $this->user_id;
 	}
 
 	
@@ -100,8 +100,8 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 	public function setRatableId($v)
 	{
 
-						if ($v !== null && !is_string($v)) {
-			$v = (string) $v; 
+						if ($v !== null && !is_int($v) && is_numeric($v)) {
+			$v = (int) $v;
 		}
 
 		if ($this->ratable_id !== $v) {
@@ -111,16 +111,16 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 
 	} 
 	
-	public function setUserReference($v)
+	public function setUserId($v)
 	{
 
-						if ($v !== null && !is_string($v)) {
-			$v = (string) $v; 
+						if ($v !== null && !is_int($v) && is_numeric($v)) {
+			$v = (int) $v;
 		}
 
-		if ($this->user_reference !== $v) {
-			$this->user_reference = $v;
-			$this->modifiedColumns[] = sfRatingPeer::USER_REFERENCE;
+		if ($this->user_id !== $v) {
+			$this->user_id = $v;
+			$this->modifiedColumns[] = sfRatingPeer::USER_ID;
 		}
 
 	} 
@@ -132,7 +132,7 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 			$v = (int) $v;
 		}
 
-		if ($this->rating !== $v) {
+		if ($this->rating !== $v || $v === 1) {
 			$this->rating = $v;
 			$this->modifiedColumns[] = sfRatingPeer::RATING;
 		}
@@ -147,9 +147,9 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 
 			$this->ratable_model = $rs->getString($startcol + 1);
 
-			$this->ratable_id = $rs->getString($startcol + 2);
+			$this->ratable_id = $rs->getInt($startcol + 2);
 
-			$this->user_reference = $rs->getString($startcol + 3);
+			$this->user_id = $rs->getInt($startcol + 3);
 
 			$this->rating = $rs->getInt($startcol + 4);
 
@@ -327,7 +327,7 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 				return $this->getRatableId();
 				break;
 			case 3:
-				return $this->getUserReference();
+				return $this->getUserId();
 				break;
 			case 4:
 				return $this->getRating();
@@ -345,7 +345,7 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 			$keys[0] => $this->getId(),
 			$keys[1] => $this->getRatableModel(),
 			$keys[2] => $this->getRatableId(),
-			$keys[3] => $this->getUserReference(),
+			$keys[3] => $this->getUserId(),
 			$keys[4] => $this->getRating(),
 		);
 		return $result;
@@ -372,7 +372,7 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 				$this->setRatableId($value);
 				break;
 			case 3:
-				$this->setUserReference($value);
+				$this->setUserId($value);
 				break;
 			case 4:
 				$this->setRating($value);
@@ -387,7 +387,7 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 		if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
 		if (array_key_exists($keys[1], $arr)) $this->setRatableModel($arr[$keys[1]]);
 		if (array_key_exists($keys[2], $arr)) $this->setRatableId($arr[$keys[2]]);
-		if (array_key_exists($keys[3], $arr)) $this->setUserReference($arr[$keys[3]]);
+		if (array_key_exists($keys[3], $arr)) $this->setUserId($arr[$keys[3]]);
 		if (array_key_exists($keys[4], $arr)) $this->setRating($arr[$keys[4]]);
 	}
 
@@ -399,7 +399,7 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 		if ($this->isColumnModified(sfRatingPeer::ID)) $criteria->add(sfRatingPeer::ID, $this->id);
 		if ($this->isColumnModified(sfRatingPeer::RATABLE_MODEL)) $criteria->add(sfRatingPeer::RATABLE_MODEL, $this->ratable_model);
 		if ($this->isColumnModified(sfRatingPeer::RATABLE_ID)) $criteria->add(sfRatingPeer::RATABLE_ID, $this->ratable_id);
-		if ($this->isColumnModified(sfRatingPeer::USER_REFERENCE)) $criteria->add(sfRatingPeer::USER_REFERENCE, $this->user_reference);
+		if ($this->isColumnModified(sfRatingPeer::USER_ID)) $criteria->add(sfRatingPeer::USER_ID, $this->user_id);
 		if ($this->isColumnModified(sfRatingPeer::RATING)) $criteria->add(sfRatingPeer::RATING, $this->rating);
 
 		return $criteria;
@@ -435,7 +435,7 @@ abstract class BasesfRating extends BaseObject  implements Persistent {
 
 		$copyObj->setRatableId($this->ratable_id);
 
-		$copyObj->setUserReference($this->user_reference);
+		$copyObj->setUserId($this->user_id);
 
 		$copyObj->setRating($this->rating);
 

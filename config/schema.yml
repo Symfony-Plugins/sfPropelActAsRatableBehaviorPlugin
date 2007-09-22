@@ -4,16 +4,12 @@ propel:
   sf_ratings:
     _attributes:      { phpName: sfRating, package: plugins.sfPropelActAsRatableBehaviorPlugin.lib.model }
     id:
-    # Ratable model class name
     ratable_model:    { type: varchar, size: 50, required: true }
-    # The ratable_id contains an md5 footprint of a ratable object reference
-    ratable_id:       { type: varchar, size: 32, required: true }
-    # The user_reference contains an md5 footprint of a "rater" (a user)
-    user_reference:   { type: varchar, size: 32 }
-    # Rating value as an integer
-    rating:           { type: integer }
+    ratable_id:       { type: integer, required: true }
+    user_id:          { type: integer }
+    rating:           { type: integer, required: true, default: 1 }
     _indexes:
       ratable_index:  [ratable_model, ratable_id]
-      ratable_uindex: [ratable_model, ratable_id, user_reference]
+      ratable_uindex: [ratable_model, ratable_id, user_id]
 
   

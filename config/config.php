@@ -7,7 +7,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
- 
+
 sfPropelBehavior::registerHooks('sfPropelActAsRatableBehavior', array (
  ':delete:pre' => array ('sfPropelActAsRatableBehavior', 'preDelete'),
 ));
@@ -15,11 +15,8 @@ sfPropelBehavior::registerHooks('sfPropelActAsRatableBehavior', array (
 sfPropelBehavior::registerMethods('sfPropelActAsRatableBehavior', array (
   array('sfPropelActAsRatableBehavior', 'setRating'),
   array('sfPropelActAsRatableBehavior', 'getMaxRating'),
-  array('sfPropelActAsRatableBehavior', 'getReferenceKey'),
   array('sfPropelActAsRatableBehavior', 'getRating'),
   array('sfPropelActAsRatableBehavior', 'getRatingDetails'),
-  array('sfPropelActAsRatableBehavior', 'getReferenceField'),
-  array('sfPropelActAsRatableBehavior', 'getReferenceFieldType'),
   array('sfPropelActAsRatableBehavior', 'getUserRating'),
   array('sfPropelActAsRatableBehavior', 'hasBeenRated'),
   array('sfPropelActAsRatableBehavior', 'hasBeenRatedByUser'),

@@ -29,7 +29,7 @@ abstract class BasesfRatingPeer {
 	const RATABLE_ID = 'sf_ratings.RATABLE_ID';
 
 	
-	const USER_REFERENCE = 'sf_ratings.USER_REFERENCE';
+	const USER_ID = 'sf_ratings.USER_ID';
 
 	
 	const RATING = 'sf_ratings.RATING';
@@ -40,17 +40,17 @@ abstract class BasesfRatingPeer {
 
 	
 	private static $fieldNames = array (
-		BasePeer::TYPE_PHPNAME => array ('Id', 'RatableModel', 'RatableId', 'UserReference', 'Rating', ),
-		BasePeer::TYPE_COLNAME => array (sfRatingPeer::ID, sfRatingPeer::RATABLE_MODEL, sfRatingPeer::RATABLE_ID, sfRatingPeer::USER_REFERENCE, sfRatingPeer::RATING, ),
-		BasePeer::TYPE_FIELDNAME => array ('id', 'ratable_model', 'ratable_id', 'user_reference', 'rating', ),
+		BasePeer::TYPE_PHPNAME => array ('Id', 'RatableModel', 'RatableId', 'UserId', 'Rating', ),
+		BasePeer::TYPE_COLNAME => array (sfRatingPeer::ID, sfRatingPeer::RATABLE_MODEL, sfRatingPeer::RATABLE_ID, sfRatingPeer::USER_ID, sfRatingPeer::RATING, ),
+		BasePeer::TYPE_FIELDNAME => array ('id', 'ratable_model', 'ratable_id', 'user_id', 'rating', ),
 		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, )
 	);
 
 	
 	private static $fieldKeys = array (
-		BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'RatableModel' => 1, 'RatableId' => 2, 'UserReference' => 3, 'Rating' => 4, ),
-		BasePeer::TYPE_COLNAME => array (sfRatingPeer::ID => 0, sfRatingPeer::RATABLE_MODEL => 1, sfRatingPeer::RATABLE_ID => 2, sfRatingPeer::USER_REFERENCE => 3, sfRatingPeer::RATING => 4, ),
-		BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'ratable_model' => 1, 'ratable_id' => 2, 'user_reference' => 3, 'rating' => 4, ),
+		BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'RatableModel' => 1, 'RatableId' => 2, 'UserId' => 3, 'Rating' => 4, ),
+		BasePeer::TYPE_COLNAME => array (sfRatingPeer::ID => 0, sfRatingPeer::RATABLE_MODEL => 1, sfRatingPeer::RATABLE_ID => 2, sfRatingPeer::USER_ID => 3, sfRatingPeer::RATING => 4, ),
+		BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'ratable_model' => 1, 'ratable_id' => 2, 'user_id' => 3, 'rating' => 4, ),
 		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, )
 	);
 
@@ -111,7 +111,7 @@ abstract class BasesfRatingPeer {
 
 		$criteria->addSelectColumn(sfRatingPeer::RATABLE_ID);
 
-		$criteria->addSelectColumn(sfRatingPeer::USER_REFERENCE);
+		$criteria->addSelectColumn(sfRatingPeer::USER_ID);
 
 		$criteria->addSelectColumn(sfRatingPeer::RATING);
 
