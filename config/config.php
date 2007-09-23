@@ -9,8 +9,7 @@
  */
 
 sfPropelBehavior::registerHooks('sfPropelActAsRatableBehavior', array (
- ':delete:pre' => array ('sfPropelActAsRatableBehavior', 'preDelete'),
- ':save:post'  => array ('sfPropelActAsRatableBehavior', 'postSave'),
+  ':delete:pre' => array ('sfPropelActAsRatableBehavior', 'preDelete'),
 ));
 
 sfPropelBehavior::registerMethods('sfPropelActAsRatableBehavior', array (

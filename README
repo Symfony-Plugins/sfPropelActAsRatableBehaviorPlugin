@@ -48,16 +48,16 @@ for an {{{Article}}} Propel model class:
 class Article extends BaseArticle
 {
 }
-sfPropelBehavior::add('Article', 
-					  array('sfPropelActAsRatableBehavior',
-                            array('max_rating'    => 10,
-                                  'rating_column' => ArticlePeer::RATING)));
+sfPropelBehavior::add(
+  'Article', 
+  array('sfPropelActAsRatableBehavior',
+        array('max_rating'   => 10,
+              'rating_field' => 'AverageRating'))); // refers to ArticlePeer::AVERAGE_RATING
 }}}
 
- * The {{{rating_column}}} parameter, which refer to a {{{float}}} 
-   column of your ratable object table which will store cached value of actual rating 
-   for the object. If not provided, join queries will be used with strong impact on
-   performances.
+ * The {{{rating_field}}} parameter, which refer to a {{{float}}} 
+   column in phpName format of your ratable object table which will store cached 
+   value of actual rating for the object. Useful for queries and performances ;)
  * The {{{max_rating}}} parameter sets the maximum rating available for an object 
    (this must be an integer greater than 0 - default is 5)
 

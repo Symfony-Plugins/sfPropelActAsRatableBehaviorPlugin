@@ -11,12 +11,17 @@ table.rating_details_table div {
  * Styles for the star rater 
  */
 
+/**
+ * Based on http://komodomedia.com/blog/samples/star_rating/example2.htm
+ * Styles for the star rater 
+ */
+
 .star-rating{
 	list-style:none;
 	margin: 0px;
 	padding:0px;
 	height: 25px;
-	position: relative;
+	position:relative;
 	overflow:hidden;
 	background: url(../images/alt_star.gif) top left repeat-x;		
 }
@@ -114,6 +119,7 @@ table.rating_details_table div {
 	display: block;
 	text-indent: -9000px;
 	z-index: 1;
+	left:0px;
 }
 
 /* remove halo effect in firefox   */
