@@ -26,7 +26,12 @@ class sfPropelActAsRatableBehavior
   const DEFAULT_MAX_RATING = 5;
   
   /**
-   * Counts ratings made on given ratable object 
+   * Default float precision
+   */
+  const DEFAULT_PRECISION = 2;
+  
+  /**
+   * Counts ratings made on given ratable object.
    * 
    * @param  BaseObject  $object
    * @return int
@@ -39,6 +44,41 @@ class sfPropelActAsRatableBehavior
     return sfRatingPeer::doCount($c);
   }
 
+  /**
+   * Retrieves ratable object configured rating column name.
+   * 
+   * @param  BaseObject  $object
+   * @return string
+   */
+  protected static function getRatingColumn(BaseObject $object)
+  {
+//    $column = sfConfig::get(
+//      sprintf('propel_behavior_sfPropelActAsRatableBehavior_%s_rating_column', 
+//              get_class($object)));
+//    $peer = get_class($object).'Peer';
+//    $available_columns = call_user_func(array($peer, 'getFieldNames'), 
+//                                        BasePeer::TYPE_COLNAME, 
+//                                        $column);
+//    if (in_array($column, $available_columns))
+//    {
+//      return $column;
+//    }
+  }   
+  
+  /**
+   * Retrieves configured float precision for ratings
+   * 
+   * @param  int  $default_precision
+   * @return int
+   */
+  protected static function getPrecision($default_precision = null)
+  {
+    if (is_null($default_precision))
+    {
+      $default_precision = self::DEFAULT_PRECISION;
+    }
+    return sfConfig::get('app_rating_precision', $default_precision);
+  }
   
   /**
    * Retrieves an existing rating object, or return a new empty one
@@ -48,7 +88,7 @@ class sfPropelActAsRatableBehavior
    * @return sfRating
    * @throws sfPropelActAsRatableException
    **/
-  protected function getOrCreate(BaseObject $object, $user_id = null)
+  protected static function getOrCreate(BaseObject $object, $user_id = null)
   {
     if ($object->isNew())
     {
@@ -57,7 +97,6 @@ class sfPropelActAsRatableBehavior
     
     if (is_null($user_id))
     {
-      // We don't use user pk
       return new sfRating();
     }
     
@@ -147,11 +186,6 @@ class sfPropelActAsRatableBehavior
     if (!is_int($max_rating))
     {
       $max_rating = self::DEFAULT_MAX_RATING;
-      sfLogger::getInstance()->warning(
-        sprintf('No maximum rating has been set for "%s" ratable objects, '.
-                'default has been set to %d',
-                get_class($object),
-                self::DEFAULT_MAX_RATING));
     }
     return $max_rating;
   }
@@ -201,7 +235,7 @@ class sfPropelActAsRatableBehavior
    * Retrieves the object rating
    *
    * @param  BaseObject  $object
-   * @param  int         $precision   Result float precision (default 2)
+   * @param  int         $precision   Result float precision
    * @return float
    **/
   public function getRating(BaseObject $object, $precision=2)
@@ -223,8 +257,7 @@ class sfPropelActAsRatableBehavior
       {
         return NULL; // Object has not been rated yet
       }
-      return round($total / $nb_ratings,
-                   sfConfig::get('app_rating_precision', $precision));
+      return round($total / $nb_ratings, self::getPrecision($precision));
     }
   }
   
@@ -323,14 +356,14 @@ class sfPropelActAsRatableBehavior
       throw new sfPropelActAsRatableException('Minimum rating is 1');
     }
     
-    $rating_object = $this->getOrCreate($object, $user_id);
+    $rating_object = self::getOrCreate($object, $user_id);
     $rating_object->setRatableModel(get_class($object));
     $rating_object->setRatableId($object->getPrimaryKey());
     $rating_object->setUserId($user_id);
     $rating_object->setRating($rating);
     return $rating_object->save();
   }
-
+  
   /**
    * Deletes all rating for a ratable object (delete cascade emulation)
    * 
@@ -349,6 +382,25 @@ class sfPropelActAsRatableBehavior
       throw new sfPropelActAsRatableException(
         'Unable to delete ratable object related ratings records');
     }
+  }
+  
+  /**
+   * Cache rating after saving
+   * 
+   * @param  BaseObject $object
+   */
+  public function postSave(BaseObject $object)
+  {
+//    $column = self::getRatingColumn($object);
+//    if (is_null($column))
+//    {
+//      return;
+//    }
+//    $peer = $object->getPeer();
+//    $field = $peer->translateFieldName($column, BasePeer::TYPE_COLNAME, 
+//                                                BasePeer::TYPE_PHPNAME);
+//    $setter = 'set'.$field;
+//    return $object->$setter($object->getRating(self::getPrecision()));
   }
 
 }

@@ -48,24 +48,20 @@ for an {{{Article}}} Propel model class:
 class Article extends BaseArticle
 {
 }
-sfPropelBehavior::add('Article', array('sfPropelActAsRatableBehavior'));
+sfPropelBehavior::add('Article', 
+					  array('sfPropelActAsRatableBehavior',
+                            array('max_rating'    => 10,
+                                  'rating_column' => ArticlePeer::RATING)));
 }}}
 
-You can add a {{{max_rating}}} parameter to the behavior, which will sets the 
-maximum rating available for an object (this must be an integer greater than 0 - 
-default is 5). For example, if you want a 10 based rating system for your 
-{{{Article}}} object :
+ * The {{{rating_column}}} parameter, which refer to a {{{float}}} 
+   column of your ratable object table which will store cached value of actual rating 
+   for the object. If not provided, join queries will be used with strong impact on
+   performances.
+ * The {{{max_rating}}} parameter sets the maximum rating available for an object 
+   (this must be an integer greater than 0 - default is 5)
 
-{{{
-<?php
-class Article extends BaseArticle
-{
-}
-sfPropelBehavior::add('Article', array('sfPropelActAsRatableBehavior',
-                                       array('max_rating' => 10)));
-}}}
-
-Now, you have to rebuild your model :
+Once your model configured, you have to rebuild it:
 
 {{{
 symfony propel-build-all
@@ -80,7 +76,7 @@ symfony cc
 == Rating consistency ==
 
 A clean way to ensure rating consistency is to associate a rating to a unique 
-identified user reference stored in server side, typically the primary key of a 
+identified user reference stored server side, typically the primary key of a 
 user record in your database.
 
 If no user reference can be retrieved, the plugin will rely on cookies, but you 
@@ -89,12 +85,13 @@ deletable by the user.
 
 == User reference retrieval configuration ==
 
-By default, the plugin will search for an sfGuardPlugin installation to retrieve
-authenticated user primary key. If you are using sfGuard, you have nothing more to
-configure.
+By default, the plugin will search for an [wiki:sfGuardPlugin sfGuardPlugin] 
+installation to retrieve authenticated user primary key. If you are using sfGuard, 
+you have nothing more to configure.
 
-But if you don't, you can specify the way a unique user reference (eg. primary key) 
-will be retrieved, using these available plugin settings in your {{{app.yml}}} file:
+If you don't use sfGuard, you can specify the way a unique user reference (eg. 
+primary key) will be retrieved, using these available plugin settings in your 
+{{{app.yml}}} file:
 
  * You can specify a PHP function, eg. {{{get_connected_user_id()}}}:
 
@@ -112,7 +109,8 @@ will be retrieved, using these available plugin settings in your {{{app.yml}}} f
     user_pk_method:      retrieveConnectedUserId
 }}}
 
-The return value of these calls should always be the primary key of your connected user.
+The return value of these calls should always be the primary key of your 
+connected user.
 
 == Using the Ajax rating system ==
 
@@ -152,14 +150,14 @@ Then, you can use the {{{sf_rater}}} helper in any of your templates:
 <?php echo sf_rater($article) ?>
 }}}
 
-== Using the rating details component ==
+== Using the rating details display component ==
 
 [[Image(RatingDetails.png, right)]]
 
 Just call the component from any of your templates:
 
 {{{
-<?php include_component('sfRating', 'ratingDetails', array('object' => $article_instance) ?>
+<?php include_component('sfRating', 'ratingDetails', array('object' => $article) ?>
 }}}
 
 == API Usage ==
@@ -201,6 +199,9 @@ To get the average rating of the object :
 {{{
 $article->getRating([$precision]);
 }}}
+
+Note: If you have concerns about performances, you will better use the cached 
+value of rating stored in the {{{rating_column}}} you configured previously.
 
 To retrieve the maximum possible rating for an object (which you have defined in
 the {{{max_rating}}} behavior optional parameter - default is 5) :
@@ -286,14 +287,16 @@ and purge your cache.
 
 === 2007-09-23 | v0.7 ===
 
- * big behavior refactoring, with model and API BC (sorry for that, but it is much
+ * big behavior refactoring, with model and API BC (sorry for that, but it is *much*
    better now)
  * removed ugly reference field configuration and behavior methods, now we use object 
    {{{getPrimaryKey()}}} method: fast, portable and reliable
- * removed sfPropelActAsRatableBehavior::isRatable() bugguy method
+ * removed sfPropelActAsRatableBehavior::isRatable() buggy method
  * added Fabian Lange patch to allow ratings details retrieval (thanks!)
  * added a component to display rating details graphically
- * removed all IP address handling related stuff
+ * removed all IP address handling related stuff (unsecure when passed as parameters)
+ * ratings storing in dedicated column in ratable object table (submitted by Vojtech 
+   Rysanek - thanks!) 
  * added i18n strings management
 
 === 2007-09-12 | v0.6.2 ===

@@ -1,4 +1,5 @@
 <?php
+for ($i=0;$i<10;$i++) echo "\n";
 // Define your test Propel class with behavior applied here
 define('TEST_CLASS', 'Article');
 // Define a setter method for this article, other than primary key
@@ -25,13 +26,21 @@ if (!defined('TEST_CLASS') or !class_exists(TEST_CLASS))
   return;
 }
 
-// initialize database manager
-$databaseManager = new sfDatabaseManager();
-$databaseManager->initialize();
-$con = Propel::getConnection();
-
 // start tests
 $t = new lime_test(46, new lime_output_color());
+
+// initialize database manager
+try
+{
+  $databaseManager = new sfDatabaseManager();
+  $databaseManager->initialize();
+  $con = Propel::getConnection();
+}
+catch (PropelException $e)
+{
+  $t->fail($e->getMessage());
+  return 0;
+}
 
 try
 {
