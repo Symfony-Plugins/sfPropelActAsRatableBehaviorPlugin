@@ -6,8 +6,8 @@
   <?php foreach ($rating_details as $rating => $details): ?>
   <tr>
     <th><?php echo sprintf(__('%d stars'), $rating) ?></th>
-    <td style="background:lightblue">
-      <div style="background:blue;width:<?php echo $details['percent'] * 2 ?>px">
+    <td class="sf_rating_bar_bg">
+      <div style="width:<?php echo $details['percent'] * 2 ?>px">
         &nbsp;
       </div>
     </td>

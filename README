@@ -15,19 +15,19 @@ symfony plugin-install http://plugins.symfony-project.com/sfPropelActAsRatableBe
 
 The source code is also available:
  * [source:plugins/sfPropelActAsRatableBehaviorPlugin from the code browser]
- * [http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/ from 
-   the SVN repository] (please always use a tagged version in production)
+ * [http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/ from the SVN repository] 
+   (please always use a tagged version in production)
    
 === SVN repository ===
 
 The plugin is also available through the Symfony SVN repository.
 
 Stable versions are available in the 
-{{{[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/tags tags]}}} 
+[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/tags tags] 
 folder, experimental ones in the 
-{{{[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/branches branches]}}} 
+[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/branches branches] 
 one and the current alpha in the 
-{{{[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/trunk trunk]}}}.
+[http://svn.symfony-project.com/plugins/sfPropelActAsRatableBehaviorPlugin/trunk trunk].
 
 '''Caution: Never use the trunk version in a production environment.'''
 
@@ -154,6 +154,8 @@ Then, you can use the {{{sf_rater}}} helper in any of your templates:
 
 == Using the rating details component ==
 
+[[Image(RatingDetails.png, right)]]
+
 Just call the component from any of your templates:
 
 {{{
@@ -166,14 +168,26 @@ Note: In below examples, {{{$user_id}}} is a string representing a
 unique reference to a user, eg. if you're using the sfGuardPlugin, 
 {{{sfContext::getInstance()->getUser()->getGuardUser()->getId()}}}.
 
-This parameter is always optional. If you don't provide it, the 
-[#UserReferenceRetrievalConfiguration configured user reference retrieval configuration]
+If you don't provide this parameter, the 
+[#Userreferenceretrievalconfiguration configured user reference retrieval configuration]
 will apply.
 
 To set a rating for a given user:
 
 {{{
 $article->setRating(10, $user_id);
+}}}
+
+To test if the object has already been rated :
+
+{{{
+$article->hasBeenRated();
+}}}
+
+To test if the object has already been rated by a particular user:
+
+{{{
+$article->hasBeenRatedByUser($user_id);
 }}}
 
 To retrieve user rating for this object :
@@ -185,7 +199,7 @@ $article->getUserRating($user_id);
 To get the average rating of the object :
 
 {{{
-$article->getRating();
+$article->getRating([$precision]);
 }}}
 
 To retrieve the maximum possible rating for an object (which you have defined in
@@ -198,7 +212,7 @@ $article->getMaxRating();
 To clear user rating :
 
 {{{
-$article->clearRating($user_id);
+$article->clearUserRating($user_id);
 }}}
 
 To retrieve rating details :
@@ -240,18 +254,6 @@ To clear all ratings for the object :
 $article->clearRatings();
 }}}
 
-You can test if the object has already been rated :
-
-{{{
-$article->hasBeenRated();
-}}}
-
-You can also test if the object has already been rated by a particular user:
-
-{{{
-$article->hasBeenRatedByUser($user_id);
-}}}
-
 == Unit testing ==
 
 The plugin is provided with a test suite located in the {{{./test}}} directory. 
@@ -278,20 +280,21 @@ and purge your cache.
 
 == TODO ==
 
- * Manage messages i18n
  * Add functional tests
  
 == Changelog ==
 
-=== 2007-09-22 | v0.7 ===
+=== 2007-09-23 | v0.7 ===
 
  * big behavior refactoring, with model and API BC (sorry for that, but it is much
    better now)
  * removed ugly reference field configuration and behavior methods, now we use object 
    {{{getPrimaryKey()}}} method: fast, portable and reliable
  * removed sfPropelActAsRatableBehavior::isRatable() bugguy method
- * added Fabian Lange patch to allow ratings details retrieval
+ * added Fabian Lange patch to allow ratings details retrieval (thanks!)
  * added a component to display rating details graphically
+ * removed all IP address handling related stuff
+ * added i18n strings management
 
 === 2007-09-12 | v0.6.2 ===
 
@@ -325,7 +328,8 @@ and purge your cache.
 
 == Maintener ==
 
-This plugin is maintened by Nicolas Perriault (nperriault -> gmail.com)
+This plugin is maintened by [http://prendreuncafe.com Nicolas Perriault] 
+(nperriault -> gmail.com)
 
 Feel free to send feture request, enhancement suggestion or idealy a patch.
  

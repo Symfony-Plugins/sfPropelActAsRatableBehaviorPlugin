@@ -24,7 +24,7 @@ function sf_rater($propel_object, $options = array())
   $css = '/sfPropelActAsRatableBehaviorPlugin/css/sf_rating';
   sfContext::getInstance()->getResponse()->addStylesheet($css);
   
-  $star_width = sfConfig::get('app_rating_starwidth', 25);
+  $star_width = sfConfig::get('app_rating_star_width', 25);
   try
   {
     $max_rating = $propel_object->getMaxRating();

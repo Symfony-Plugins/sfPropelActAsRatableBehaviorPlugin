@@ -11,6 +11,24 @@ class BasesfRatingActions extends sfActions
 {
   
   /**
+   * Here we will initiate system messages translatable strings
+   * 
+   */
+  public function preExecute()
+  {
+    sfLoader::loadHelpers('I18N');
+    $this->messages = array(
+      'already_voted'    => __('You have already voted'),
+      'missing_params'   => __('Parameters are missing to retrieve ratable object'),
+      'post_only'        => __('POST requests only'),
+      'ratable_error'    => __('Unable to retrieve ratable object: %s'),
+      'thank_you'        => __('Thank you for your vote'),
+      'thank_you_update' => __('Thanks for updating your vote'),
+      'user_error'       => __('A problem has occured, sorry for the inconvenience'),
+    );
+  }
+  
+  /**
    * <p>Rate a propel object. This action is typically executed from an AJAX 
    * request.</p>
    * 
@@ -34,7 +52,7 @@ class BasesfRatingActions extends sfActions
     {
       if ($this->getRequest()->getMethod() !== sfRequest::POST)
       {
-        return $this->renderText('POST requests only');
+        return $this->renderText($this->messages['post_only']);
       }
       
       // Retrieve parameters from request
@@ -46,8 +64,7 @@ class BasesfRatingActions extends sfActions
       // Retrieve ratable propel object
       if (!($propel_object_name && $propel_object_id && !is_null($rating)))
       {
-        return $this->renderFatalError(
-                 'Parameters are missing to retrieve ratable object');
+        return $this->renderFatalError($this->messages['missing_params']);
       }
       
       $propel_object = $this->getRatableObject($propel_object_name, 
@@ -56,7 +73,7 @@ class BasesfRatingActions extends sfActions
       if (is_null($propel_object))
       {
         return $this->renderFatalError(
-                 'Unable to retrieve ratable object: '.$e->getMessage());
+                 sprintf($this->message['ratable_error'], $e->getMessage()));
       }
       
       // User retrieval
@@ -67,14 +84,15 @@ class BasesfRatingActions extends sfActions
         $cookie_name = sprintf('rating_%s_%d', $propel_object_name, $propel_object_id);
         if (!is_null($this->getRequest()->getCookie($cookie_name)))
         {
-          $message = 'You have already voted';
+          $message = $this->messages['already_voted'];
         }
         else
         {
           $propel_object->setRating((int) $rating);
-          $cookie_expires = date('Y-m-d H:m:i', time() + (86400*365*10));
+          $cookie_ttl = sfConfig::get('app_rating_cookie_ttl', (86400*365*10));
+          $cookie_expires = date('Y-m-d H:m:i', time() + $cookie_ttl);
           $this->getResponse()->setCookie($cookie_name, (int)$rating, $cookie_expires);
-          $message = 'Thank you for your vote';
+          $message = $this->messages['thank_you'];
         }
       }
       else
@@ -82,8 +100,8 @@ class BasesfRatingActions extends sfActions
         $already_rated = $propel_object->hasBeenRatedByUser($user_id);
         $propel_object->setRating((int) $rating, $user_id);
         $message = $already_rated === true ?
-                         'Thanks for updating your vote' :
-                         'Thank you for your vote';
+                         $this->messages['thank_you_update'] :
+                         $this->messages['thank_you'];
       }
       
       // This is useful if escaping has been enabled (no decorated object type modification)
@@ -121,7 +139,7 @@ class BasesfRatingActions extends sfActions
     {
       sfLogger::getInstance()->warning('Rating error: '.$log_info);
     }
-    return $this->renderText('A problem has occured, sorry for the inconvenience');
+    return $this->renderText($this->messages['user_error']);
   }
   
 }

@@ -39,10 +39,20 @@ class sfPropelActAsRatableBehaviorToolkit
   public static function getUserPK()
   {
     // sgGuard detection and guard user id retrieval
+    $session_user = sfContext::getInstance()->getUser();
     if (class_exists('sfGuardSecurityUser')
-        && is_callable(sfContext::getInstance()->getUser(), 'getGuardUser'))
+        && $session_user instanceof sfGuardSecurityUser
+        && is_callable($session_user, 'getGuardUser'))
     {
-      return sfContext::getInstance()->getUser()->getGuardUser()->getId();
+      $guard_user = $session_user->getGuardUser();
+      if (!is_null($guard_user))
+      {
+        $guard_user_id = $guard_user->getId();
+        if (!is_null($guard_user_id))
+        {
+          return $guard_user_id;
+        }
+      }
     }
     
     // Function

@@ -1,4 +1,8 @@
-table.rating_details_table td div {
+table.rating_details_table td.sf_rating_bar_bg {
+	background: lightblue;
+}
+
+table.rating_details_table div {
 	background: blue;
 }
 

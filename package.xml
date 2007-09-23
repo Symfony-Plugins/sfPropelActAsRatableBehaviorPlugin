@@ -10,10 +10,10 @@
     <email>nperriault@gmail.com</email>
     <active>yes</active>
   </lead>
-  <date>2007-09-12</date>
+  <date>2007-09-23</date>
   <version>
-    <release>0.6.2</release>
-    <api>0.6.2</api>
+    <release>0.7.0</release>
+    <api>0.7.0</api>
   </version>
   <stability>
     <release>beta</release>
@@ -32,35 +32,31 @@
           <file name="sfRatingHelper.php" role="data"/>
         </dir>
         <dir name="model">
-          <dir name="map">
-            <file name="sfRatingMapBuilder.php" role="data"/>
-          </dir>
-          <dir name="om">
-            <file name="BasesfRating.php" role="data"/>
-            <file name="BasesfRatingPeer.php" role="data"/>
-          </dir>
+          <dir name="map"></dir>
+          <dir name="om"></dir>
           <file name="sfRating.php" role="data"/>
           <file name="sfRatingPeer.php" role="data"/>
         </dir>
         <file name="sfPropelActAsRatableBehavior.class.php" role="data"/>
+        <file name="sfPropelActAsRatableBahaviorToolkit.class.php" role="data"/>
         <file name="sfPropelActAsRatableException.class.php" role="data"/>
       </dir>
-      <file name="LICENSE" role="data"/>
       <dir name="modules">
         <dir name="sfRating">
           <dir name="actions">
             <file name="actions.class.php" role="data"/>
+            <file name="components.class.php" role="data"/>
           </dir>
           <dir name="config"/>
           <dir name="lib">
             <file name="BasesfRatingActions.class.php" role="data"/>
           </dir>
           <dir name="templates">
+            <file name="_ratingSuccess.php" role="data"/>
             <file name="rateSuccess.php" role="data"/>
           </dir>
         </dir>
       </dir>
-      <file name="README" role="data"/>
       <dir name="test">
         <dir name="unit">
           <file name="sfPropelActAsRatableBehaviorTest.php" role="data"/>
@@ -74,6 +70,8 @@
           <file name="alt_star.gif" role="data"/>
         </dir>
       </dir>
+      <file name="README" role="data"/>
+      <file name="LICENSE" role="data"/>
     </dir>
   </contents>
   <dependencies>
