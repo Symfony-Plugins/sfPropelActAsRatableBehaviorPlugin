@@ -40,7 +40,7 @@ class sfPropelActAsRatableBehavior
   public function countRatings(BaseObject $object)
   {
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+    $c->add(sfRatingPeer::RATABLE_ID, self::getObjectReferenceKey($object));
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     return sfRatingPeer::doCount($c);
   }
@@ -81,7 +81,7 @@ class sfPropelActAsRatableBehavior
     }
     
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+    $c->add(sfRatingPeer::RATABLE_ID, self::getObjectReferenceKey($object));
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->add(sfRatingPeer::USER_ID, $user_id);
     $user_rating = sfRatingPeer::doSelectOne($c);
@@ -96,7 +96,7 @@ class sfPropelActAsRatableBehavior
   public function clearRatings(BaseObject $object)
   {
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+    $c->add(sfRatingPeer::RATABLE_ID, self::getObjectReferenceKey($object));
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $ret = sfRatingPeer::doDelete($c);
     self::setRatingToObject($object, 0);
@@ -117,7 +117,7 @@ class sfPropelActAsRatableBehavior
     }
     
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+    $c->add(sfRatingPeer::RATABLE_ID, self::getObjectReferenceKey($object));
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->add(sfRatingPeer::USER_ID, $user_id);
     $ret = sfRatingPeer::doDelete($c);
@@ -133,7 +133,7 @@ class sfPropelActAsRatableBehavior
   public function hasBeenRated(BaseObject $object)
   {
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+    $c->add(sfRatingPeer::RATABLE_ID, self::getObjectReferenceKey($object));
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     return sfRatingPeer::doCount($c) > 0;
   }
@@ -152,7 +152,7 @@ class sfPropelActAsRatableBehavior
         'Impossible to check a user rating with no user primary key provided');
     }
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+    $c->add(sfRatingPeer::RATABLE_ID, self::getObjectReferenceKey($object));
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->add(sfRatingPeer::USER_ID, $user_id);
     return (sfRatingPeer::doCount($c) > 0);
@@ -217,6 +217,47 @@ class sfPropelActAsRatableBehavior
   }
 
   /**
+   * Retrieves reference_field phpName from configuration
+   * 
+   * @param  BaseObject  $object
+   * @return mixed
+   */
+  protected static function getObjectReferenceField(BaseObject $object)
+  {
+    return sfConfig::get(
+      sprintf('propel_behavior_sfPropelActAsRatableBehavior_%s_reference_field', 
+              get_class($object)));
+  }
+  
+  /**
+   * Retrieves reference key for current ratable object (default returns 
+   * primary key)
+   * 
+   * @param  BaseObject $object
+   * @return int
+   */
+  protected static function getObjectReferenceKey(BaseObject $object)
+  {
+    $reference_field = self::getObjectReferenceField($object);
+    if (is_null($reference_field))
+    {
+      return $object->getPrimaryKey();
+    }
+    
+    $getter = 'get'.$reference_field;
+    if (method_exists($object, $getter))
+    {
+      $ret = $object->$getter();
+      if (!is_int($ret))
+      {
+        throw new sfPropelActAsRatableException(
+          'A reference field must be typed as integer');
+      }
+      return $ret;
+    }
+  }
+
+  /**
    * Retrieves the object rating
    *
    * @param  BaseObject  $object
@@ -231,7 +272,7 @@ class sfPropelActAsRatableBehavior
     }
     
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+    $c->add(sfRatingPeer::RATABLE_ID, self::getObjectReferenceKey($object));
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->clearSelectColumns();
     $c->addAsColumn('nb_ratings', 'COUNT('.sfRatingPeer::ID.')');
@@ -263,7 +304,7 @@ class sfPropelActAsRatableBehavior
   public function getRatingDetails(BaseObject $object, $include_all = false)
   {
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+    $c->add(sfRatingPeer::RATABLE_ID, self::getObjectReferenceKey($object));
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->clearSelectColumns();
     $c->addAsColumn('nb_ratings', 'COUNT('.sfRatingPeer::ID.')');
@@ -306,7 +347,7 @@ class sfPropelActAsRatableBehavior
     }
     
     $c = new Criteria();
-    $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+    $c->add(sfRatingPeer::RATABLE_ID, self::getObjectReferenceKey($object));
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->add(sfRatingPeer::USER_ID, $user_id);
     $rating_object = sfRatingPeer::doSelectOne($c);
@@ -348,7 +389,7 @@ class sfPropelActAsRatableBehavior
     
     $rating_object = self::getOrCreate($object, $user_id);
     $rating_object->setRatableModel(get_class($object));
-    $rating_object->setRatableId($object->getPrimaryKey());
+    $rating_object->setRatableId(self::getObjectReferenceKey($object));
     $rating_object->setUserId($user_id);
     $rating_object->setRating($rating);
     $ret = $rating_object->save();
@@ -366,7 +407,7 @@ class sfPropelActAsRatableBehavior
     try
     {
       $c = new Criteria();
-      $c->add(sfRatingPeer::RATABLE_ID, $object->getPrimaryKey());
+      $c->add(sfRatingPeer::RATABLE_ID, self::getObjectReferenceKey($object));
       sfRatingPeer::doDelete($c);
     }
     catch (Exception $e)
@@ -381,8 +422,9 @@ class sfPropelActAsRatableBehavior
    */
   
   /**
-   * Retrieves rating_field from configuration
+   * Retrieves rating_field phpName from configuration
    * 
+   * @param  BaseObject  $object
    * @return mixed
    */
   protected static function getObjectRatingField(BaseObject $object)
@@ -403,9 +445,12 @@ class sfPropelActAsRatableBehavior
     $field = self::getObjectRatingField($object);
     if (!is_null($field)) 
     {
-      $setter = 'set'.$field; 
-      $ret = $object->$setter($value);
-      return $object->save();
+      $setter = 'set'.$field;
+      if (method_exists($object, $setter))
+      {
+        $ret = $object->$setter($value);
+        return $object->save();
+      }
     }
   } 
   
@@ -421,7 +466,10 @@ class sfPropelActAsRatableBehavior
     if (!is_null($field)) 
     {
       $getter = 'get'.$field; 
-      return $object->$getter();
+      if (method_exists($object, $getter))
+      {
+        return $object->$getter();
+      }
     }
     return null;
   }

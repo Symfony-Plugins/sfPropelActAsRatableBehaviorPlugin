@@ -1,7 +1,7 @@
 <?php
 for ($i=0;$i<10;$i++) echo "\n";
 // Define your test Propel class with behavior applied here
-define('TEST_CLASS', 'Article');
+define('TEST_CLASS', 'sfTestObject');
 // Define a setter method for this article, other than primary key
 define('TEST_METHOD', 'setTitle');
 

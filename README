@@ -48,18 +48,11 @@ for an {{{Article}}} Propel model class:
 class Article extends BaseArticle
 {
 }
-sfPropelBehavior::add(
-  'Article', 
-  array('sfPropelActAsRatableBehavior',
-        array('max_rating'   => 10,
-              'rating_field' => 'AverageRating'))); // refers to ArticlePeer::AVERAGE_RATING
+sfPropelBehavior::add('Article', array('sfPropelActAsRatableBehavior'));
 }}}
 
- * The {{{rating_field}}} parameter, which refer to a {{{float}}} 
-   column in phpName format of your ratable object table which will store cached 
-   value of actual rating for the object. Useful for queries and performances ;)
- * The {{{max_rating}}} parameter sets the maximum rating available for an object 
-   (this must be an integer greater than 0 - default is 5)
+You can fine-tune behavior with optional parameters, see the 
+[#Behavioroptionalparameters advanced configuration section].
 
 Once your model configured, you have to rebuild it:
 
@@ -73,7 +66,34 @@ And clear the cache :
 symfony cc
 }}}
 
-== Rating consistency ==
+== Advanced configuration ==
+
+=== Behavior optional parameters ===
+
+{{{
+<?php
+class Article extends BaseArticle
+{
+}
+sfPropelBehavior::add(
+  'Article', 
+  array('sfPropelActAsRatableBehavior',
+        array('max_rating'      => 10,              // Max rating value for an Article
+              'rating_field'    => 'AverageRating', // refers to ArticlePeer::AVERAGE_RATING
+              'reference_field' => 'Reference')));  // refers to ArticlePeer::REFERENCE
+}}}
+
+ * The {{{max_rating}}} parameter sets the maximum rating available for an object 
+   (this must be an integer greater than 0 - default is 5)
+ * The {{{rating_field}}} parameter, which refer to a {{{float}}} 
+   column in phpName format of your ratable object table which will store cached 
+   value of actual rating for the object. Useful for queries and performances ;)
+ * The {{{reference_field}}} parameter sets the name of the field where you 
+   store the identifier of the object to rate. By default, the plugin will use
+   the primary key of the object. You must return an integer fo referencing a
+   custom identifier.
+
+=== Ensure rating consistency ===
 
 A clean way to ensure rating consistency is to associate a rating to a unique 
 identified user reference stored server side, typically the primary key of a 
@@ -83,7 +103,7 @@ If no user reference can be retrieved, the plugin will rely on cookies, but you
 should consider this alternative solution with caution, as cookies are easily 
 deletable by the user.
 
-== User reference retrieval configuration ==
+=== User reference retrieval configuration ===
 
 By default, the plugin will search for an [wiki:sfGuardPlugin sfGuardPlugin] 
 installation to retrieve authenticated user primary key. If you are using sfGuard, 
