@@ -67,13 +67,13 @@ class BasesfRatingActions extends sfActions
         return $this->renderFatalError($this->messages['missing_params']);
       }
       
-      $propel_object = $this->getRatableObject($propel_object_name, 
-                                               $propel_object_id);      
+      $propel_object = sfPropelActAsRatableBehavior::retrieveByKey($propel_object_name, 
+                                                                   $propel_object_id);
       
       if (is_null($propel_object))
       {
         return $this->renderFatalError(
-                 sprintf($this->message['ratable_error'], $e->getMessage()));
+                 sprintf($this->message['ratable_error']));
       }
       
       // User retrieval
@@ -113,18 +113,6 @@ class BasesfRatingActions extends sfActions
     {
       return $this->renderFatalError($e->getMessage());
     }
-  }
-  
-  /**
-   * Retrieve a ratable Propel object from parameters
-   * 
-   * @return BaseObject
-   */
-  protected function getRatableObject($class_name, $id)
-  {
-    $peer = $class_name.'Peer';
-    $object = call_user_func(array($peer, 'retrieveByPK'), $id);
-    return $object;
   }
   
   /**

@@ -18,6 +18,7 @@ sfPropelBehavior::registerMethods('sfPropelActAsRatableBehavior', array (
   array('sfPropelActAsRatableBehavior', 'getMaxRating'),
   array('sfPropelActAsRatableBehavior', 'getRating'),
   array('sfPropelActAsRatableBehavior', 'getRatingDetails'),
+  array('sfPropelActAsRatableBehavior', 'getReferenceKey'),
   array('sfPropelActAsRatableBehavior', 'getUserRating'),
   array('sfPropelActAsRatableBehavior', 'hasBeenRated'),
   array('sfPropelActAsRatableBehavior', 'hasBeenRatedByUser'),

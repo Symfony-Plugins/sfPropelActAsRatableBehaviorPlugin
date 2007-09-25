@@ -77,7 +77,7 @@ class sfPropelActAsRatableBehaviorToolkit
         throw new sfPropelActAsRatableException(
           sprintf('Static method "%s::%s()" does not exist', $class, $method));
       }
-      return call_user_func(array(get_class($class), $method));
+      return call_user_func(array($class, $method));
     }
   }
 
