@@ -94,7 +94,7 @@ class BasesfRatingActions extends sfActions
       }
       
       $this->token = $token;
-      $this->rating = $rating;
+      $this->rating = $object->getRating();
       $this->message = $message;
     }
     catch (Exception $e)
