@@ -117,16 +117,15 @@ primary key) will be retrieved, using these available plugin settings in your
 
 {{{
   rating:
-    user_pk_function:    get_connected_user_id  
+    user_id_getter:      get_connected_user_id  
 }}}
 
  * Or a static method of a PHP class, eg. 
-   {{{MyCustomUtilsClass::retrieveConnectedUserId()}}}:
+   {{{MyCustomUtilsClass::getConnectedUserId()}}}:
 
 {{{
   rating:
-    user_pk_class:       MyCustomUtilsClass
-    user_pk_method:      retrieveConnectedUserId
+    user_id_getter:      [MyCustomUtilsClass, getConnectedUserId]
 }}}
 
 The return value of these calls should always be the primary key of your 
@@ -305,12 +304,17 @@ and purge your cache.
  
 == Changelog ==
 
+=== 2007-10-29 | v0.7.1 ===
+
+ * Ratable model objects instances references are now tokenized in the session 
+   and are no more passed as request parameters
+
 === 2007-09-23 | v0.7 ===
 
- * big behavior refactoring, with model and API BC (sorry for that, but it is *much*
-   better now)
- * removed ugly reference field configuration and behavior methods, now we use object 
-   {{{getPrimaryKey()}}} method: fast, portable and reliable
+ * big behavior refactoring, with model and API BC (sorry for that, but it is 
+   *much* better now)
+ * removed ugly reference field configuration and behavior methods, now we use 
+   object {{{getPrimaryKey()}}} method: fast, portable and reliable
  * removed sfPropelActAsRatableBehavior::isRatable() buggy method
  * added Fabian Lange patch to allow ratings details retrieval (thanks!)
  * added a component to display rating details graphically
@@ -352,7 +356,7 @@ and purge your cache.
 == Maintener ==
 
 This plugin is maintened by [http://prendreuncafe.com Nicolas Perriault] 
-(nperriault -> gmail.com)
+({{{nperriault}}} -> {{{gmail.com}}})
 
 Feel free to send feture request, enhancement suggestion or idealy a patch.
  

@@ -16,6 +16,7 @@ class BasesfRatingActions extends sfActions
    */
   public function preExecute()
   {
+    parent::preExecute();
     sfLoader::loadHelpers('I18N');
     $this->messages = array(
       'already_voted'    => __('You have already voted'),
@@ -32,19 +33,11 @@ class BasesfRatingActions extends sfActions
    * <p>Rate a propel object. This action is typically executed from an AJAX 
    * request.</p>
    * 
-   * <p><strong>Required</strong> POST request parameters are:</p>
-   * <ul>
-   *   <li><code>o</code>:      Propel class name to rate</li>
-   *   <li><code>id</code>:     Propel object primary key</li>
-   *   <li><code>rating</code>: Rating to apply</li>
-   * </ul>
-   * 
    * <p>You should override this method in your own exteends actions class if 
    * you need to associate current rating with a user.</p>
    * 
    * @see  sfPropelActAsRatableBehavior API
    * @link http://trac.symfony-project.com/trac/wiki/sfPropelActAsRatableBehaviorPlugin
-   *
    */
   public function executeRate()
   {
@@ -56,39 +49,35 @@ class BasesfRatingActions extends sfActions
       }
       
       // Retrieve parameters from request
-      $propel_object_name = $this->getRequestParameter('o');
-      $propel_object_id = $this->getRequestParameter('id');
+      $token  = $this->getRequestParameter('token');
       $rating = $this->getRequestParameter('rating');
       
-      
       // Retrieve ratable propel object
-      if (!($propel_object_name && $propel_object_id && !is_null($rating)))
+      if (is_null($token) or is_null($rating))
       {
         return $this->renderFatalError($this->messages['missing_params']);
       }
       
-      $propel_object = sfPropelActAsRatableBehavior::retrieveByKey($propel_object_name, 
-                                                                   $propel_object_id);
+      $object = sfPropelActAsRatableBehaviorToolkit::retrieveFromToken($token);
       
-      if (is_null($propel_object))
+      if (is_null($object))
       {
-        return $this->renderFatalError(
-                 sprintf($this->message['ratable_error']));
+        return $this->renderFatalError($this->message['ratable_error']);
       }
       
       // User retrieval
-      $user_id = sfPropelActAsRatableBehaviorToolkit::getUserPK();
+      $user_id = sfPropelActAsRatableBehaviorToolkit::getUserId();
       if (is_null($user_id))
       {
         // Votes are cookie based
-        $cookie_name = sprintf('rating_%s_%d', $propel_object_name, $propel_object_id);
+        $cookie_name = sprintf('rating_%s', $token);
         if (!is_null($this->getRequest()->getCookie($cookie_name)))
         {
           $message = $this->messages['already_voted'];
         }
         else
         {
-          $propel_object->setRating((int) $rating);
+          $object->setRating((int) $rating);
           $cookie_ttl = sfConfig::get('app_rating_cookie_ttl', (86400*365*10));
           $cookie_expires = date('Y-m-d H:m:i', time() + $cookie_ttl);
           $this->getResponse()->setCookie($cookie_name, (int)$rating, $cookie_expires);
@@ -97,16 +86,15 @@ class BasesfRatingActions extends sfActions
       }
       else
       {
-        $already_rated = $propel_object->hasBeenRatedByUser($user_id);
-        $propel_object->setRating((int) $rating, $user_id);
+        $already_rated = $object->hasBeenRatedByUser($user_id);
+        $object->setRating((int) $rating, $user_id);
         $message = $already_rated === true ?
                          $this->messages['thank_you_update'] :
                          $this->messages['thank_you'];
       }
       
-      // This is useful if escaping has been enabled (no decorated object type modification)
-      $this->object_class = $propel_object_name;
-      $this->object = $propel_object;
+      $this->token = $token;
+      $this->rating = $rating;
       $this->message = $message;
     }
     catch (Exception $e)

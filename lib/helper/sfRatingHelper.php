@@ -4,7 +4,7 @@
  * 
  * @author Nicolas Perriault <nperriault@gmail.com>
  */
-sfLoader::loadHelpers('Javascript', 'Tag');
+sfLoader::loadHelpers('Javascript', 'Tag', 'I18N');
 /**
  * Return the HTML code for a unordered list showing rating stars
  * 
@@ -17,10 +17,11 @@ function sf_rater($object, $options = array())
 {
   if (is_null($object) or !$object instanceof BaseObject)
   {
-    sfLogger::getInstance()->debug('You cannot rate a NULL object');
+    sfLogger::getInstance()->debug('A NULL object cannot be rated');
   }
   
   // Add css resources to the response
+  // TODO: handle non http root url
   $css = '/sfPropelActAsRatableBehaviorPlugin/css/sf_rating';
   sfContext::getInstance()->getResponse()->addStylesheet($css);
   
@@ -45,8 +46,10 @@ function sf_rater($object, $options = array())
     
     $object_class = get_class($object);
     $object_id = $object->getReferenceKey();
-    $msg_domid = sprintf('rating_message_%s_%s', $object_class, $object_id) ;
-    $bar_domid = sprintf('current_rating_%s_%s', $object_class, $object_id) ;
+    $token = sfPropelActAsRatableBehaviorToolkit::addTokenToSession($object_class, $object_id);
+    
+    $msg_domid = sprintf('rating_message_%s', $token) ;
+    $bar_domid = sprintf('current_rating_%s', $token) ;
     
     $list_content  = '  <li class="current-rating" id="'.$bar_domid.'" style="width:'.$bar_width.'px;">';
     $list_content .= sprintf('Currently rated %s star(s) on %d', 
@@ -58,16 +61,15 @@ function sf_rater($object, $options = array())
     {
       $list_content .= 
         '  <li>'.link_to_remote(sprintf('Rate it %d stars', $i), 
-          array('url'      => sprintf('sfRating/rate?o=%s&id=%d&rating=%d', 
-                                      $object_class, 
-                                      $object_id, 
+          array('url'      => sprintf('sfRating/rate?token=%s&rating=%d', 
+                                      $token, 
                                       $i),
                 'update'   => $msg_domid,
                 'script'   => true,
                 'complete' => visual_effect('appear', $msg_domid).
                               visual_effect('highlight', $msg_domid)), 
           array('class'  => 'r'.$i.'stars',
-                'title'  => 'Rate it '.$i.' stars')).'</li>';
+                'title'  => __(sprintf('Rate it %d stars', $i)))).'</li>';
     }
     
     return content_tag('ul', $list_content, $options).
@@ -75,6 +77,6 @@ function sf_rater($object, $options = array())
   }
   catch (Exception $e)
   {
-    sfLogger::getInstance()->debug('Exception catched from sf_rater helper: '.$e->getMessage());
+    sfLogger::getInstance()->err('Exception catched from sf_rater helper: '.$e->getMessage());
   }
 }
