@@ -15,7 +15,7 @@ sfLoader::loadHelpers('Javascript', 'Tag', 'I18N');
  **/
 function sf_rater($object, $options = array())
 {
-  if (is_null($object) or !$object instanceof BaseObject)
+  if (is_null($object))
   {
     sfLogger::getInstance()->debug('A NULL object cannot be rated');
   }
