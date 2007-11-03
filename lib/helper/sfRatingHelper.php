@@ -56,15 +56,16 @@ function sf_rater($object, $options = array())
     $bar_domid = sprintf('current_rating_%s', $token) ;
     
     $list_content  = '  <li class="current-rating" id="'.$bar_domid.'" style="width:'.$bar_width.'px;">';
-    $list_content .= sprintf('Currently rated %s star(s) on %d', 
+    $list_content .= sprintf(__('Currently rated %d star(s) on %d'), 
                              $object->getRating(), 
                              $max_rating);
     $list_content .= '  </li>';
     
     for ($i=1; $i <= $max_rating; $i++)
     {
+      $label = sprintf(__('Rate it %d stars'), $i);
       $list_content .= 
-        '  <li>'.link_to_remote(sprintf('Rate it %d stars', $i), 
+        '  <li>'.link_to_remote($label, 
           array('url'      => sprintf('sfRating/rate?token=%s&rating=%d', 
                                       $token, 
                                       $i),
@@ -72,8 +73,8 @@ function sf_rater($object, $options = array())
                 'script'   => true,
                 'complete' => visual_effect('appear', $msg_domid).
                               visual_effect('highlight', $msg_domid)), 
-          array('class'  => 'r'.$i.'stars',
-                'title'  => __(sprintf('Rate it %d stars', $i)))).'</li>';
+          array('class'    => 'r'.$i.'stars',
+                'title'    => $label)).'</li>';
     }
     
     return content_tag('ul', $list_content, $options).
