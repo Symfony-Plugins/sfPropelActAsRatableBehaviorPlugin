@@ -77,7 +77,7 @@ class Article extends BaseArticle
 }
 sfPropelBehavior::add(
   'Article', 
-  array('sfPropelActAsRatableBehavior',
+  array('sfPropelActAsRatableBehavior' =>
         array('max_rating'      => 10,              // Max rating value for an Article
               'rating_field'    => 'AverageRating', // refers to ArticlePeer::AVERAGE_RATING
               'reference_field' => 'Reference')));  // refers to ArticlePeer::REFERENCE
