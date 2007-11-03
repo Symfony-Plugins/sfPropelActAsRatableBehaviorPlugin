@@ -4,7 +4,16 @@
  * 
  * @author Nicolas Perriault <nperriault@gmail.com>
  */
+
+// Add css resources to the response
+// TODO: handle non http root url
 sfLoader::loadHelpers('Javascript', 'Tag', 'I18N');
+$css = '/sfPropelActAsRatableBehaviorPlugin/css/sf_rating';
+sfContext::getInstance()->getResponse()->addStylesheet($css);
+
+// Add Prototype javascript lib
+sfContext::getInstance()->getResponse()->addJavascript('/sf/prototype/js/prototype.js');
+
 /**
  * Return the HTML code for a unordered list showing rating stars
  * 
@@ -19,11 +28,6 @@ function sf_rater($object, $options = array())
   {
     sfLogger::getInstance()->debug('A NULL object cannot be rated');
   }
-  
-  // Add css resources to the response
-  // TODO: handle non http root url
-  $css = '/sfPropelActAsRatableBehaviorPlugin/css/sf_rating';
-  sfContext::getInstance()->getResponse()->addStylesheet($css);
   
   $star_width = sfConfig::get('app_rating_star_width', 25);
   try
