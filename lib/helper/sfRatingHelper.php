@@ -29,9 +29,9 @@ function sf_rater($object, $options = array())
     sfLogger::getInstance()->debug('A NULL object cannot be rated');
   }
   
-  if (isset($options['start-width']))
+  if (isset($options['star-width']))
   {
-    $star_width = $options['start-width'];
+    $star_width = $options['star-width'];
   }
   else
   {
