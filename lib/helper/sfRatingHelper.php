@@ -29,7 +29,15 @@ function sf_rater($object, $options = array())
     sfLogger::getInstance()->debug('A NULL object cannot be rated');
   }
   
-  $star_width = sfConfig::get('app_rating_star_width', 25);
+  if (isset($options['start-width']))
+  {
+    $star_width = $options['start-width'];
+  }
+  else
+  {
+    $star_width = sfConfig::get('app_rating_star_width', 25);
+  }
+  
   try
   {
     $max_rating = $object->getMaxRating();
