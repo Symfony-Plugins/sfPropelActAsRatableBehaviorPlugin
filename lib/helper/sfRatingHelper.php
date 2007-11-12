@@ -48,7 +48,14 @@ function sf_rater($object, $options = array())
                              array('style' => 'width:'.$full_bar_width.'px'));
     }
     
-    $object_class = get_class($object);
+    if ($object instanceof sfOutputEscaperObjectDecorator)
+    {
+      $object_class = get_class($object->getRawValue());
+    }
+    else
+    {
+      $object_class = get_class($object);
+    }
     $object_id = $object->getReferenceKey();
     $token = sfPropelActAsRatableBehaviorToolkit::addTokenToSession($object_class, $object_id);
     
