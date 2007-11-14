@@ -20,7 +20,7 @@ class sfPropelActAsRatableBehaviorToolkit
     $session = sfContext::getInstance()->getUser();
     if (class_exists('sfGuardSecurityUser')
         && $session instanceof sfGuardSecurityUser
-        && is_callable($session, 'getGuardUser'))
+        && is_callable(array($session, 'getGuardUser')))
     {
       $guard_user = $session->getGuardUser();
       if (!is_null($guard_user))
