@@ -1,0 +1,10 @@
+# sfPropelActAsRatableBehaviorPlugin config
+all:
+  rating:
+    cookie_prefix:    rating                             # Prefix for cookie names containing votes
+    cookie_ttl:       31356000                           # Cookie expiration time from now, in seconds. Here, 31356000 = one year. 
+    user_id_getter:   [myToolkit, getConnectedMemberId]  # Function name or [ClassName, staticMethodName] to use to retrieve the primary key of the current connected user related Propel object instance. Set to ~ (null) for automatic detection. 
+    salt:             my_secret_passphrase               # Secret hash. PLEASE change this for something personal and keep it private.
+    max_tokens:       10                                 # Number of tokens to store in session containing objects/pk pairs (leave this if you're unsure)
+    star_width:       25                                 # Width of a start (or image representing a rating value), in pixels
+    precision:        2                                  # PHP float precision for average ratings

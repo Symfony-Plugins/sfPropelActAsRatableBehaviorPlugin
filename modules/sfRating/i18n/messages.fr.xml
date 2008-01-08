@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<xliff version="1.0">
+  <file orginal="global" source-language="en_US" datatype="plaintext">
+    <body>
+      <trans-unit>
+        <source>You have already voted</source>
+        <target>Vous avez déjà voté</target>
+      </trans-unit>
+      <trans-unit>
+        <source>Parameters are missing to retrieve ratable object</source>
+        <target>Paramètres manquants pour récupérer l'objet à évaluer</target>
+      </trans-unit>
+      <trans-unit>
+        <source>POST requests only</source>
+        <target>Requêtes POST uniquement</target>
+      </trans-unit>
+      <trans-unit>
+        <source>Unable to retrieve ratable object: %s</source>
+        <target>Impossible de récupérer une instance objet évaluable: %s</target>
+      </trans-unit>
+      <trans-unit>
+        <source>Thank you for your vote</source>
+        <target>Votre évaluation a été enregistrée</target>
+      </trans-unit>
+      <trans-unit>
+        <source>Thanks for updating your vote</source>
+        <target>Votre évaluation a été mise à jour</target>
+      </trans-unit>
+      <trans-unit>
+        <source>A problem has occured, sorry for the inconvenience</source>
+        <target>Un problème a été rencontré, veuillez nous excuser pour la gêne occasionnée</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -70,7 +70,7 @@ class BasesfRatingActions extends sfActions
       if (is_null($user_id))
       {
         // Votes are cookie based
-        $cookie_name = sprintf('rating_%s', $token);
+        $cookie_name = sprintf('%s_%s', sfConfig::get('app_rating_cookie_prefix', 'rating'), $token);
         if (!is_null($this->getRequest()->getCookie($cookie_name)))
         {
           $message = $this->messages['already_voted'];
