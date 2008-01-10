@@ -36,6 +36,7 @@ function sf_rater($object, $options = array())
   else
   {
     $star_width = $options['star-width'];
+    unset($options['star-width']);
   }
   
   try
@@ -81,9 +82,10 @@ function sf_rater($object, $options = array())
       $label = sprintf(__('Rate it %d stars'), $i);
       $list_content .= 
         '  <li>'.link_to_remote($label, 
-          array('url'      => sprintf('sfRating/rate?token=%s&rating=%d', 
+          array('url'      => sprintf('sfRating/rate?token=%s&rating=%d&star_width=%d', 
                                       $token, 
-                                      $i),
+                                      $i,
+                                      $star_width),
                 'update'   => $msg_domid,
                 'script'   => true,
                 'complete' => visual_effect('appear', $msg_domid).

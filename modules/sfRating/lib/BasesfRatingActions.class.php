@@ -51,6 +51,7 @@ class BasesfRatingActions extends sfActions
       // Retrieve parameters from request
       $token  = $this->getRequestParameter('token');
       $rating = $this->getRequestParameter('rating');
+      $star_width = $this->getRequestParameter('star_width', sfConfig::get('app_rating_star_width', 25));
       
       // Retrieve ratable propel object
       if (is_null($token) or is_null($rating))
@@ -95,6 +96,7 @@ class BasesfRatingActions extends sfActions
       
       $this->token = $token;
       $this->rating = $object->getRating();
+      $this->star_width = $star_width;
       $this->message = $message;
     }
     catch (Exception $e)
