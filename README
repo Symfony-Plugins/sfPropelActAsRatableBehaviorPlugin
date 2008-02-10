@@ -87,7 +87,8 @@ sfPropelBehavior::add(
    (this must be an integer greater than 0 - default is 5)
  * The {{{rating_field}}} parameter, which refer to a {{{float}}} 
    column in phpName format of your ratable object table which will store cached 
-   value of actual rating for the object. Useful for queries and performances ;)
+   value of actual rating for the object. Useful for queries performances and 
+   sorting ;)
  * The {{{reference_field}}} parameter sets the name of the field where you 
    store the identifier of the object to rate. By default, the plugin will use
    the primary key of the object. You must return an integer fo referencing a
@@ -134,6 +135,8 @@ connected user.
 == Using the Ajax rating system ==
 
 This plugin provides an Ajax-based rating system, with pretty stars to click on.
+You must note that this web module is provided for illustration purpose, it has
+weak chances to fit exactly your project needs.
 
 [[Image(rating_capture.png)]]
 

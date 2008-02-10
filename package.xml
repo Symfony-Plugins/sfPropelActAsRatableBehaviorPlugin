@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.4.1" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+<package xmlns="http://pear.php.net/dtd/package-2.0"
+  xmlns:tasks="http://pear.php.net/dtd/tasks-1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  packagerversion="1.4.1" version="2.0"
+  xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
   <name>sfPropelActAsRatableBehaviorPlugin</name>
   <channel>pear.symfony-project.com</channel>
   <summary>Propel ratable behavior</summary>
-  <description>This Symfony plugin allow rating capacity to a Propel object through a Propel behavior.</description>
+  <description>
+    This Symfony plugin allow rating capacity to a Propel object through
+    a Propel behavior.
+  </description>
   <lead>
     <name>Nicolas Perriault</name>
     <user>nicolas</user>
@@ -12,66 +19,70 @@
   </lead>
   <date>2007-10-29</date>
   <version>
-    <release>0.7.1</release>
-    <api>0.7.1</api>
+    <release>0.7.2</release>
+    <api>0.7.2</api>
   </version>
   <stability>
     <release>beta</release>
     <api>beta</api>
   </stability>
-  <license uri="http://www.symfony-project.com/license">MIT license</license>
+  <license uri="http://www.symfony-project.com/license">
+    MIT license
+  </license>
   <notes>-</notes>
   <contents>
     <dir name="/">
       <dir name="config">
-        <file name="config.php" role="data"/>
-        <file name="schema.yml" role="data"/>
+        <file name="config.php" role="data" />
+        <file name="schema.yml" role="data" />
       </dir>
       <dir name="lib">
         <dir name="helper">
-          <file name="sfRatingHelper.php" role="data"/>
+          <file name="sfRatingHelper.php" role="data" />
         </dir>
         <dir name="model">
           <dir name="map"></dir>
           <dir name="om"></dir>
-          <file name="sfRating.php" role="data"/>
-          <file name="sfRatingPeer.php" role="data"/>
+          <file name="sfRating.php" role="data" />
+          <file name="sfRatingPeer.php" role="data" />
         </dir>
-        <file name="sfPropelActAsRatableBehavior.class.php" role="data"/>
-        <file name="sfPropelActAsRatableBehaviorToolkit.class.php" role="data"/>
-        <file name="sfPropelActAsRatableException.class.php" role="data"/>
+        <file name="sfPropelActAsRatableBehavior.class.php" role="data" />
+        <file name="sfPropelActAsRatableBehaviorToolkit.class.php"
+          role="data" />
+        <file name="sfPropelActAsRatableException.class.php"
+          role="data" />
       </dir>
       <dir name="modules">
         <dir name="sfRating">
           <dir name="actions">
-            <file name="actions.class.php" role="data"/>
-            <file name="components.class.php" role="data"/>
+            <file name="actions.class.php" role="data" />
+            <file name="components.class.php" role="data" />
           </dir>
-          <dir name="config"/>
+          <dir name="config" />
           <dir name="lib">
-            <file name="BasesfRatingActions.class.php" role="data"/>
+            <file name="BasesfRatingActions.class.php" role="data" />
           </dir>
           <dir name="templates">
-            <file name="_ratingDetails.php" role="data"/>
-            <file name="rateSuccess.php" role="data"/>
+            <file name="_ratingDetails.php" role="data" />
+            <file name="rateSuccess.php" role="data" />
           </dir>
         </dir>
       </dir>
       <dir name="test">
         <dir name="unit">
-          <file name="sfPropelActAsRatableBehaviorTest.php" role="data"/>
+          <file name="sfPropelActAsRatableBehaviorTest.php" role="data" />
         </dir>
       </dir>
       <dir name="web">
         <dir name="css">
-          <file name="sf_rating.css" role="data"/>
+          <file name="sf_rating.css" role="data" />
         </dir>
         <dir name="images">
-          <file name="alt_star.gif" role="data"/>
+          <file name="alt_star.gif" role="data" />
         </dir>
       </dir>
-      <file name="README" role="data"/>
-      <file name="LICENSE" role="data"/>
+      <file name="README" role="data" />
+      <file name="LICENSE" role="data" />
     </dir>
   </contents>
   <dependencies>
@@ -91,8 +102,6 @@
       </package>
     </required>
   </dependencies>
-  <phprelease>
- </phprelease>
-  <changelog>
- </changelog>
+  <phprelease></phprelease>
+  <changelog></changelog>
 </package>

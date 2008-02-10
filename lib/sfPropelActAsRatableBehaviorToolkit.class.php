@@ -17,7 +17,7 @@ class sfPropelActAsRatableBehaviorToolkit
   public static function getUserId()
   {
     // sfGuardPlugin detection and guard user id retrieval
-    $session = sfContext::getInstance()->getUser();
+    $session = @sfContext::getInstance()->getUser();
     if (class_exists('sfGuardSecurityUser')
         && $session instanceof sfGuardSecurityUser
         && is_callable(array($session, 'getGuardUser')))
