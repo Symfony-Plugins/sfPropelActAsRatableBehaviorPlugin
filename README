@@ -307,6 +307,10 @@ and purge your cache.
  
 == Changelog ==
 
+=== 2008-02-10 | v0.7.2 ===
+
+ * Minor bugfixes
+
 === 2007-10-29 | v0.7.1 ===
 
  * Ratable model objects instances references are now tokenized in the session 
