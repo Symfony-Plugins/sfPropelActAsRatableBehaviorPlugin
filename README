@@ -307,6 +307,12 @@ and purge your cache.
  
 == Changelog ==
 
+=== trunk ===
+
+ * reduce db calls r9241
+ * use use_helper instate of sfLoader::loadHelpers to not run into trouble with no i18n r9240
+ * readme fix r9239
+
 === 2008-02-10 | v0.7.2 ===
 
  * Minor bugfixes
