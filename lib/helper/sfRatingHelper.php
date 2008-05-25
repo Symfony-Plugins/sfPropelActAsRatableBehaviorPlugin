@@ -73,7 +73,7 @@ function sf_rater($object, $options = array())
     
     $list_content  = '  <li class="current-rating" id="'.$bar_domid.'" style="width:'.$bar_width.'px;">';
     $list_content .= sprintf(__('Currently rated %d star(s) on %d'), 
-                             $object->getRating(), 
+                             $actual_rating, 
                              $max_rating);
     $list_content .= '  </li>';
     
