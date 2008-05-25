@@ -179,7 +179,7 @@ Then, you can use the {{{sf_rater}}} helper in any of your templates:
 Just call the component from any of your templates:
 
 {{{
-<?php include_component('sfRating', 'ratingDetails', array('object' => $article) ?>
+<?php include_component('sfRating', 'ratingDetails', array('object' => $article)) ?>
 }}}
 
 == API Usage ==
