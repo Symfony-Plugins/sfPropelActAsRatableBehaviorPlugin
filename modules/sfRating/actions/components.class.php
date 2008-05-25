@@ -14,8 +14,8 @@ class sfRatingComponents extends sfComponents
   {
     if ($this->object)
     {
-      $total_ratings = $this->object->countRatings();
       $details = $this->object->getRatingDetails(true);
+      $total_ratings = array_sum($details);
       $full_details = array();
       foreach ($details as $rating => $nb_ratings)
       {
