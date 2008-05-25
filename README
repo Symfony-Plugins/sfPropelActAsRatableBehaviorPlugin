@@ -168,7 +168,7 @@ project_root
 Then, you can use the {{{sf_rater}}} helper in any of your templates:
 
 {{{
-<?php sfLoader::loadHelpers('sfRating') ?>
+<?php use_helper('sfRating') ?>
 <?php echo sf_rater($article) ?>
 }}}
 

@@ -4,7 +4,7 @@
  * 
  * @author Nicolas Perriault <nperriault@gmail.com>
  */
-sfLoader::loadHelpers(array('Javascript', 'Tag', 'I18N'));
+use_helper(array('Javascript', 'Tag', 'I18N'));
 
 $response = sfContext::getInstance()->getResponse();
 

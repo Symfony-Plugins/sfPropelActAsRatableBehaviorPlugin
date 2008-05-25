@@ -1,4 +1,4 @@
-<?php sfLoader::loadHelpers('I18N') ?>
+<?php use_helper('I18N') ?>
 <?php if (isset($object)): ?>
 <?php $dom_id = 'sf_rating_details_'.$object_type.'_'.$object->getId() ?>
 <table class="rating_details_table" 
