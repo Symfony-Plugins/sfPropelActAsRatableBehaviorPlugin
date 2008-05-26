@@ -137,6 +137,7 @@ class sfPropelActAsRatableBehavior
     $c->add(sfRatingPeer::RATABLE_MODEL, get_class($object));
     $c->clearSelectColumns();
     $c->addSelectColumn(sfRatingPeer::ID);
+    $c->setLimit(1);
     return sfRatingPeer::doSelectRS($c)->getRecordCount() > 0;
   }
 
@@ -159,6 +160,7 @@ class sfPropelActAsRatableBehavior
     $c->add(sfRatingPeer::USER_ID, $user_id);
     $c->clearSelectColumns();
     $c->addSelectColumn(sfRatingPeer::ID);
+    $c->setLimit(1);
     return sfRatingPeer::doSelectRS($c)->getRecordCount() > 0;
   }
   
