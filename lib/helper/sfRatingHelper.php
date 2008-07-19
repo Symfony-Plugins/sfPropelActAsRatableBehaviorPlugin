@@ -95,7 +95,7 @@ function sf_rater($object, $options = array())
     }
     
     return content_tag('ul', $list_content, $options).
-           content_tag('div', null, array('id' => $msg_domid));
+           content_tag('div', null, array('id' => $msg_domid, 'class' => 'sf_rating_message'));
   }
   catch (Exception $e)
   {
