@@ -284,6 +284,10 @@ class sfPropelActAsRatableBehavior
     $c->addAsColumn('nb_ratings', 'COUNT('.sfRatingPeer::ID.')');
     $c->addAsColumn('total', 'SUM('.sfRatingPeer::RATING.')');
     $c->addGroupByColumn(sfRatingPeer::RATABLE_MODEL);
+    $c->addGroupByColumn(sfRatingPeer::ID);
+    $c->addGroupByColumn(sfRatingPeer::RATABLE_ID);
+    $c->addGroupByColumn(sfRatingPeer::USER_ID);
+    $c->addGroupByColumn(sfRatingPeer::RATING);
     $rs = sfRatingPeer::doSelectRS($c);
     $rs->setFetchmode(ResultSet::FETCHMODE_ASSOC);
     while ($rs->next())
